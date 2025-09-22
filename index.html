@@ -1,181 +1,192 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <title>منصة المستر</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <meta charset="UTF-8">
+  <title>منصة الخصائص</title>
   <style>
     body {
-      background: url("bg.jpg") no-repeat center center fixed;
-      background-size: cover;
+      font-family: Tahoma, sans-serif;
+      direction: rtl;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
     }
+    header {
+      background: #007bff;
+      color: white;
+      padding: 15px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .container {
+      padding: 20px;
+    }
+    input {
+      padding: 8px;
+      width: 220px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 8px 15px;
+      font-size: 16px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover { background: #0056b3; }
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      text-align: right;
+    }
+    h3 { margin-top: 20px; color: #007bff; }
+    h4 { margin-top: 15px; color: green; }
+    .video-card, .contact-card {
+      background: white;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      display: inline-block;
+      width: 250px;
+      text-align: center;
+    }
+    .contact-card a {
+      display: block;
+      padding: 10px;
+      background: #28a745;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-top: 5px;
+    }
+    .contact-card a:hover { background: #218838; }
   </style>
 </head>
-<body class="bg-gray-900 bg-opacity-70 text-white min-h-screen">
-  <!-- Header -->
-  <header class="p-6 bg-blue-600 bg-opacity-90 text-white shadow-lg text-center">
-    <h1 class="text-3xl font-bold animate__animated animate__fadeInDown">
-      منصة المستر ✨
-    </h1>
-  </header>
+<body>
+  <header>📚 منصة الخصائص</header>
+  
+  <div class="container">
+    <!-- 🔍 بحث الطالب -->
+    <input type="text" id="studentCode" placeholder="ادخل كود الطالب">
+    <button onclick="searchStudent()">بحث</button>
+    <div id="studentInfo" class="card"></div>
 
-  <main class="p-6 space-y-10">
-    <!-- بحث الطالب -->
-    <section class="bg-white bg-opacity-90 text-gray-900 p-6 rounded-2xl shadow-md">
-      <h2 class="text-xl font-bold mb-4">🔍 بحث عن الطالب</h2>
-      <div class="flex gap-2">
-        <input id="studentCode" type="text" placeholder="ادخل كود الطالب"
-          class="flex-1 p-2 border rounded-lg" />
-        <button onclick="searchStudent()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
-          بحث
-        </button>
-      </div>
-      <div id="studentInfo" class="mt-6 hidden"></div>
-    </section>
+    <!-- 🎥 قسم الفيديوهات -->
+    <h3>🎥 الفيديوهات</h3>
+    <div id="videos"></div>
 
-    <!-- الفيديوهات -->
-    <section class="bg-white bg-opacity-90 text-gray-900 p-6 rounded-2xl shadow-md">
-      <h2 class="text-xl font-bold mb-4">🎥 الفيديوهات</h2>
-      <div id="videos" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </section>
-
-    <!-- التواصل -->
-    <section class="bg-white bg-opacity-90 text-gray-900 p-6 rounded-2xl shadow-md">
-      <h2 class="text-xl font-bold mb-4">📞 للتواصل</h2>
-      <div id="contacts" class="flex gap-4 flex-wrap"></div>
-    </section>
-  </main>
+    <!-- 📞 قسم التواصل -->
+    <h3>📞 للتواصل</h3>
+    <div id="contacts"></div>
+  </div>
 
   <script>
-    // 🔹 حط اللينكات بتاعة الشيت هنا (CSV)
+    // 🔹 روابط الشيتات (CSV منشورة من جوجل شيتس)
     const SHEET_STUDENTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRj2ajSLPIBsAwHwv8qSVX7_5q5I_LATlqKEWkzOIdF_3Em9PmTTWZ8BnXNau0yCNeF1XAx9KX3PLrN/pub?gid=635336311&single=true&output=csv";
     const SHEET_VIDEOS   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRj2ajSLPIBsAwHwv8qSVX7_5q5I_LATlqKEWkzOIdF_3Em9PmTTWZ8BnXNau0yCNeF1XAx9KX3PLrN/pub?gid=849351073&single=true&output=csv";
     const SHEET_CONTACTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRj2ajSLPIBsAwHwv8qSVX7_5q5I_LATlqKEWkzOIdF_3Em9PmTTWZ8BnXNau0yCNeF1XAx9KX3PLrN/pub?gid=218257892&single=true&output=csv";
 
-    let students = [], videos = [], contacts = [];
+    function safeNumber(val) {
+      return (val === "" || isNaN(val)) ? 0 : Number(val);
+    }
 
-    // تحويل CSV ل JSON
+    // 📌 تحميل CSV وتحويله لجيسون
     async function fetchCSV(url) {
       const res = await fetch(url);
       const text = await res.text();
-      const [headerLine, ...lines] = text.trim().split("\n");
-      const headers = headerLine.split(",");
-      return lines.map((line) => {
-        const values = line.split(",");
-        return headers.reduce((obj, h, i) => {
-          obj[h.trim()] = values[i]?.trim();
-          return obj;
-        }, {});
+      const rows = text.split("\n").map(r => r.split(","));
+      const headers = rows[0].map(h => h.trim());
+      return rows.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((h, i) => obj[h] = row[i] ? row[i].trim() : "");
+        return obj;
       });
     }
 
-    // تحميل البيانات
-    async function loadData() {
-      students = await fetchCSV(SHEET_STUDENTS);
-      videos   = await fetchCSV(SHEET_VIDEOS);
-      contacts = await fetchCSV(SHEET_CONTACTS);
-
-      renderVideos();
-      renderContacts();
-    }
-
-    // البحث عن الطالب
-    function searchStudent() {
+    // 📌 البحث عن الطالب
+    async function searchStudent() {
       const code = document.getElementById("studentCode").value.trim();
-      const student = students.find((s) => s.code === code);
-      const info = document.getElementById("studentInfo");
+      const students = await fetchCSV(SHEET_STUDENTS);
+      let student = students.find(s => s.code === code);
 
       if (!student) {
-        info.innerHTML = '<p class="text-red-500 font-bold">⚠️ الطالب غير موجود</p>';
-        info.classList.remove("hidden");
+        document.getElementById("studentInfo").innerHTML = "<p>⚠️ الطالب غير موجود</p>";
         return;
       }
 
-      // حساب المجموع
-      let totalScore = 0;
-      let maxScore = 0;
+      let w1_exam = safeNumber(student.w1_exam);
+      let w1_homework = safeNumber(student.w1_homework);
+      let w2_exam = safeNumber(student.w2_exam);
+      let w2_homework = safeNumber(student.w2_homework);
+      let w3_exam = safeNumber(student.w3_exam);
+      let w3_homework = safeNumber(student.w3_homework);
+      let w4_exam = safeNumber(student.w4_exam);
+      let w4_homework = safeNumber(student.w4_homework);
+      let finalExam = safeNumber(student.finalExam);
 
-      const exams = [];
-      Object.keys(student).forEach((k) => {
-        if (k.includes("exam") && k !== "finalExam") {
-          const val = parseFloat(student[k] || 0);
-          exams.push({ name: k, value: val, max: 10 });
-          totalScore += val;
-          maxScore += 10;
-        }
-        if (k.includes("homework")) {
-          const val = parseFloat(student[k] || 0);
-          exams.push({ name: k, value: val, max: 10 });
-          totalScore += val;
-          maxScore += 10;
-        }
-      });
+      let total = w1_exam + w2_exam + w3_exam + w4_exam +
+                  w1_homework + w2_homework + w3_homework + w4_homework +
+                  finalExam;
 
-      // النهائي (من 20)
-      const finalExam = parseFloat(student.finalExam || 0);
-      exams.push({ name: "finalExam", value: finalExam, max: 20 });
-      totalScore += finalExam;
-      maxScore += 20;
+      let maxTotal = (4*10) + (4*10) + 20; // 100
+      let percent = ((total / maxTotal) * 100).toFixed(2);
 
-      const percent = ((totalScore / maxScore) * 100).toFixed(2);
-
-      // جدول الدرجات
-      let tableHeaders = "";
-      let tableValues  = "";
-      exams.forEach(e => {
-        tableHeaders += `<th class="border px-2 py-1">${e.name}</th>`;
-        tableValues  += `<td class="border px-2 py-1">${e.value} / ${e.max}</td>`;
-      });
-
-      info.innerHTML = `
-        <div class="p-4 border rounded-lg bg-gray-50 animate__animated animate__fadeIn">
-          <p><b>الاسم:</b> ${student.name}</p>
-          <p><b>المجموعة:</b> ${student.group}</p>
-          <p><b>الصف:</b> ${student.class}</p>
-          <p class="mt-2"><b>النسبة المئوية:</b> ${percent}%</p>
-
-          <div class="mt-4 overflow-x-auto">
-            <table class="w-full border text-center">
-              <thead class="bg-gray-200">
-                <tr>${tableHeaders}</tr>
-              </thead>
-              <tbody>
-                <tr>${tableValues}</tr>
-              </tbody>
-            </table>
-          </div>
-        </div>`;
-      info.classList.remove("hidden");
+      document.getElementById("studentInfo").innerHTML = `
+        <p><b>اسم الطالب:</b> ${student.name}</p>
+        <p><b>الصف:</b> ${student.class}</p>
+        <p><b>المجموعة:</b> ${student.group}</p>
+        <h3>التقييم</h3>
+        <p>الأسبوع 1: امتحان ${w1_exam}/10 - واجب ${w1_homework}/10</p>
+        <p>الأسبوع 2: امتحان ${w2_exam}/10 - واجب ${w2_homework}/10</p>
+        <p>الأسبوع 3: امتحان ${w3_exam}/10 - واجب ${w3_homework}/10</p>
+        <p>الأسبوع 4: امتحان ${w4_exam}/10 - واجب ${w4_homework}/10</p>
+        <p>الامتحان الشامل: ${finalExam}/20</p>
+        <h4>تقدير الطالب: ${percent}%</h4>
+      `;
     }
 
-    // عرض الفيديوهات
-    function renderVideos() {
+    // 📌 عرض الفيديوهات
+    async function loadVideos() {
+      const videos = await fetchCSV(SHEET_VIDEOS);
       const container = document.getElementById("videos");
-      container.innerHTML = videos.map(
-        (v) => `
-        <a href="${v.url}" target="_blank"
-          class="p-4 bg-white rounded-xl shadow hover:shadow-lg animate__animated animate__zoomIn">
-          <h3 class="font-semibold">${v.title}</h3>
-          <p class="text-sm text-gray-500">${v.notes || ""}</p>
-        </a>`
-      ).join("");
+      container.innerHTML = videos.map(v => `
+        <div class="video-card">
+          <h4>${v.title}</h4>
+          <a href="${v.url}" target="_blank">مشاهدة الفيديو</a>
+        </div>
+      `).join("");
     }
 
-    // عرض التواصل
-    function renderContacts() {
+    // 📌 عرض وسائل التواصل
+    async function loadContacts() {
+      const contacts = await fetchCSV(SHEET_CONTACTS);
       const container = document.getElementById("contacts");
-      container.innerHTML = contacts.map((c) => {
-        const link = c.type === "whatsapp" ? `https://wa.me/${c.number}` : `tel:${c.number}`;
-        return `<a href="${link}" target="_blank"
-          class="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 animate__animated animate__fadeInUp">
-          ${c.label}
-        </a>`;
+      container.innerHTML = contacts.map(c => {
+        let link = c.type === "whatsapp"
+          ? `https://wa.me/${c.number}`
+          : `tel:${c.number}`;
+        return `
+          <div class="contact-card">
+            <p>${c.label}</p>
+            <a href="${link}" target="_blank">اتصال</a>
+          </div>
+        `;
       }).join("");
     }
 
-    loadData();
+    // تشغيل عند فتح الموقع
+    loadVideos();
+    loadContacts();
   </script>
 </body>
 </html>
-
