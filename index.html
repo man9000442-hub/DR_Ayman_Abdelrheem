@@ -19,9 +19,7 @@
       font-size: 20px;
       font-weight: bold;
     }
-    .container {
-      padding: 20px;
-    }
+    .container { padding: 20px; }
     input {
       padding: 8px;
       width: 220px;
@@ -52,14 +50,22 @@
     h4 { margin-top: 15px; color: green; }
     .video-card, .contact-card {
       background: white;
-      padding: 10px;
+      padding: 15px;
       margin: 10px;
-      border-radius: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       display: inline-block;
       width: 250px;
       text-align: center;
     }
+    .video-card a {
+      display: block;
+      margin-top: 8px;
+      text-decoration: none;
+      color: #007bff;
+      font-weight: bold;
+    }
+    .video-card a:hover { color: #0056b3; }
     .contact-card a {
       display: block;
       padding: 10px;
@@ -156,17 +162,16 @@
     }
 
     // 📌 عرض الفيديوهات
-   async function loadVideos() {
-      const res = await fetch(sheetVideos);
-      const data = await res.text();
-      const rows = data.split("\n").map(r => r.split(",")).slice(1);
-      let html = "";
-      rows.forEach(row => {
-        if (row[0] && row[1]) {
-          html += `<a class="video-link" href="${row[1]}" target="_blank">🎬 ${row[0]}</a>`;
-        }
-      });
-      document.getElementById("videoList").innerHTML = html || "⚠️ لا توجد فيديوهات متاحة.";
+    async function loadVideos() {
+      const videos = await fetchCSV(SHEET_VIDEOS);
+      const container = document.getElementById("videos");
+      container.innerHTML = videos.map(v => `
+        <div class="video-card">
+          <p><b>${v.title}</b></p>
+          <p>${v.note}</p>
+          <a href="${v.link}" target="_blank">مشاهدة 🎬</a>
+        </div>
+      `).join("");
     }
 
     // 📌 عرض وسائل التواصل
@@ -192,5 +197,3 @@
   </script>
 </body>
 </html>
-
-
