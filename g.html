@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>منصة المستر</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    body {
+      background: url("bg.jpg") no-repeat center center fixed;
+      background-size: cover;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 bg-opacity-70 text-white min-h-screen">
+  <!-- Header -->
+  <header class="p-6 bg-blue-600 bg-opacity-90 text-white shadow-lg text-center">
+    <h1 class="text-3xl font-bold animate__animated animate__fadeInDown">
+      منصة المستر ✨
+    </h1>
+  </header>
+
+  <main class="p-6 space-y-10">
+    <!-- بحث الطالب -->
+    <section class="bg-white bg-opacity-90 text-gray-900 p-6 rounded-2xl shadow-md">
+      <h2 class="text-xl font-bold mb-4">🔍 بحث عن الطالب</h2>
+      <div class="flex gap-2">
+        <input id="studentCode" type="text" placeholder="ادخل كود الطالب"
+          class="flex-1 p-2 border rounded-lg" />
+        <button onclick="searchStudent()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+          بحث
+        </button>
+      </div>
+      <div id="studentInfo" class="mt-6 hidden"></div>
+    </section>
+
+    <!-- الفيديوهات -->
+    <section class="bg-white bg-opacity-90 text-gray-900 p-6 rounded-2xl shadow-md">
+      <h2 class="text-xl font-bold mb-4">🎥 الفيديوهات</h2>
+      <div id="videos" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- التواصل -->
+    <section class="bg-white bg-opacity-90 text-gray-900 p-6 rounded-2xl shadow-md">
+      <h2 class="text-xl font-bold mb-4">📞 للتواصل</h2>
+      <div id="contacts" class="flex gap-4 flex-wrap"></div>
+    </section>
+  </main>
+
+  <script>
+    // 🔹 حط اللينكات بتاعة الشيت هنا (CSV)
+    const SHEET_STUDENTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRj2ajSLPIBsAwHwv8qSVX7_5q5I_LATlqKEWkzOIdF_3Em9PmTTWZ8BnXNau0yCNeF1XAx9KX3PLrN/pub?gid=0&single=true&output=csv";
+    const SHEET_VIDEOS   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRj2ajSLPIBsAwHwv8qSVX7_5q5I_LATlqKEWkzOIdF_3Em9PmTTWZ8BnXNau0yCNeF1XAx9KX3PLrN/pub?gid=849351073&single=true&output=csv";
+    const SHEET_CONTACTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRj2ajSLPIBsAwHwv8qSVX7_5q5I_LATlqKEWkzOIdF_3Em9PmTTWZ8BnXNau0yCNeF1XAx9KX3PLrN/pub?gid=218257892&single=true&output=csv";
+
+    let students = [], videos = [], contacts = [];
+
+    // تحويل CSV ل JSON
+    async function fetchCSV(url) {
+      const res = await fetch(url);
+      const text = await res.text();
+      const [headerLine, ...lines] = text.trim().split("\n");
+      const headers = headerLine.split(",");
+      return lines.map((line) => {
+        const values = line.split(",");
+        return headers.reduce((obj, h, i) => {
+          obj[h.trim()] = values[i]?.trim();
+          return obj;
+        }, {});
+      });
+    }
+
+    // تحميل البيانات
+    async function loadData() {
+      students = await fetchCSV(SHEET_STUDENTS);
+      videos   = await fetchCSV(SHEET_VIDEOS);
+      contacts = await fetchCSV(SHEET_CONTACTS);
+
+      renderVideos();
+      renderContacts();
+    }
+
+    // البحث عن الطالب
+    function searchStudent() {
+      const code = document.getElementById("studentCode").value.trim();
+      const student = students.find((s) => s.code === code);
+      const info = document.getElementById("studentInfo");
+
+      if (!student) {
+        info.innerHTML = '<p class="text-red-500 font-bold">⚠️ الطالب غير موجود</p>';
+        info.classList.remove("hidden");
+        return;
+      }
+
+      // حساب المجموع
+      let totalScore = 0;
+      let maxScore = 0;
+
+      const exams = [];
+      Object.keys(student).forEach((k) => {
+        if (k.includes("exam") && k !== "finalExam") {
+          const val = parseFloat(student[k] || 0);
+          exams.push({ name: k, value: val, max: 10 });
+          totalScore += val;
+          maxScore += 10;
+        }
+        if (k.includes("homework")) {
+          const val = parseFloat(student[k] || 0);
+          exams.push({ name: k, value: val, max: 10 });
+          totalScore += val;
+          maxScore += 10;
+        }
+      });
+
+      // النهائي (من 20)
+      const finalExam = parseFloat(student.finalExam || 0);
+      exams.push({ name: "finalExam", value: finalExam, max: 20 });
+      totalScore += finalExam;
+      maxScore += 20;
+
+      const percent = ((totalScore / maxScore) * 100).toFixed(2);
+
+      // جدول الدرجات
+      let tableHeaders = "";
+      let tableValues  = "";
+      exams.forEach(e => {
+        tableHeaders += `<th class="border px-2 py-1">${e.name}</th>`;
+        tableValues  += `<td class="border px-2 py-1">${e.value} / ${e.max}</td>`;
+      });
+
+      info.innerHTML = `
+        <div class="p-4 border rounded-lg bg-gray-50 animate__animated animate__fadeIn">
+          <p><b>الاسم:</b> ${student.name}</p>
+          <p><b>المجموعة:</b> ${student.group}</p>
+          <p><b>الصف:</b> ${student.class}</p>
+          <p class="mt-2"><b>النسبة المئوية:</b> ${percent}%</p>
+
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full border text-center">
+              <thead class="bg-gray-200">
+                <tr>${tableHeaders}</tr>
+              </thead>
+              <tbody>
+                <tr>${tableValues}</tr>
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      info.classList.remove("hidden");
+    }
+
+    // عرض الفيديوهات
+    function renderVideos() {
+      const container = document.getElementById("videos");
+      container.innerHTML = videos.map(
+        (v) => `
+        <a href="${v.url}" target="_blank"
+          class="p-4 bg-white rounded-xl shadow hover:shadow-lg animate__animated animate__zoomIn">
+          <h3 class="font-semibold">${v.title}</h3>
+          <p class="text-sm text-gray-500">${v.notes || ""}</p>
+        </a>`
+      ).join("");
+    }
+
+    // عرض التواصل
+    function renderContacts() {
+      const container = document.getElementById("contacts");
+      container.innerHTML = contacts.map((c) => {
+        const link = c.type === "whatsapp" ? `https://wa.me/${c.number}` : `tel:${c.number}`;
+        return `<a href="${link}" target="_blank"
+          class="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 animate__animated animate__fadeInUp">
+          ${c.label}
+        </a>`;
+      }).join("");
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
