@@ -156,16 +156,64 @@
     }
 
     // 📌 عرض الفيديوهات
-    async function loadVideos() {
-      const videos = await fetchCSV(SHEET_VIDEOS);
-      const container = document.getElementById("videos");
-      container.innerHTML = videos.map(v => `
-        <div class="video-card">
-          <h4>${v.title}</h4>
-          <a href="${v.url}" target="_blank">مشاهدة الفيديو</a>
-        </div>
-      `).join("");
-    }
+   <h3>🎥 الفيديوهات</h3>
+<div id="videos" class="videos-container"></div>
+
+<style>
+  .videos-container {
+    display: grid;
+    gap: 15px;
+    margin-top: 10px;
+  }
+  .video-box {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    text-align: right;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .video-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+  }
+  .video-title {
+    font-weight: bold;
+    font-size: 16px;
+    color: #007bff;
+    margin-bottom: 5px;
+  }
+  .video-notes {
+    font-size: 14px;
+    color: #555;
+  }
+</style>
+
+<script>
+  async function loadVideos() {
+    const res = await fetch("YOUR_VIDEOS_SHEET_LINK");
+    const text = await res.text();
+    const rows = text.split("\n").map(r => r.split(","));
+    const headers = rows[0].map(h => h.trim());
+    const videos = rows.slice(1).map(row => {
+      let obj = {};
+      headers.forEach((h, i) => obj[h] = row[i] ? row[i].trim() : "");
+      return obj;
+    });
+
+    const container = document.getElementById("videos");
+    container.innerHTML = videos.map(v => `
+      <div class="video-box" onclick="window.open('${v.url}', '_blank')">
+        <div class="video-title">🎬 ${v.title}</div>
+        <div class="video-notes">${v.notes || ""}</div>
+      </div>
+    `).join("");
+  }
+
+  loadVideos();
+</script>
+
 
     // 📌 عرض وسائل التواصل
     async function loadContacts() {
@@ -190,3 +238,4 @@
   </script>
 </body>
 </html>
+
