@@ -123,90 +123,6 @@
       });
     }
 
-    async function searchStudent() {
-      const code = document.getElementById("studentCode").value.trim();
-      const students = await fetchCSV(SHEET_STUDENTS);
-      let student = students.find(s => s.code === code);
-
-      if (!student) {
-        document.getElementById("studentInfo").innerHTML = "<p>⚠️ الطالب غير موجود</p>";
-        return;
-      }
-
-      let w1_exam = safeNumber(student.w1_exam);
-      let w1_homework = safeNumber(student.w1_homework);
-      let w2_exam = safeNumber(student.w2_exam);
-      let w2_homework = safeNumber(student.w2_homework);
-      let w3_exam = safeNumber(student.w3_exam);
-      let w3_homework = safeNumber(student.w3_homework);
-      let w4_exam = safeNumber(student.w4_exam);
-      let w4_homework = safeNumber(student.w4_homework);
-      let finalExam = safeNumber(student.finalExam);
-
-      let total = w1_exam + w2_exam + w3_exam + w4_exam +
-                  w1_homework + w2_homework + w3_homework + w4_homework +
-                  finalExam;
-
-      let maxTotal = (4*10) + (4*10) + 20; // 100
-      let percent = ((total / maxTotal) * 100).toFixed(2);
-
-      document.getElementById("studentInfo").innerHTML = `
-        <p><b>اسم الطالب:</b> ${student.name}</p>
-        <p><b>الصف:</b> ${student.class}</p>
-        <p><b>المجموعة:</b> ${student.group}</p>
-        <h3>التقييم</h3>
-        <p>الأسبوع 1: امتحان ${w1_exam}/10 - واجب ${w1_homework}/10</p>
-        <p>الأسبوع 2: امتحان ${w2_exam}/10 - واجب ${w2_homework}/10</p>
-        <p>الأسبوع 3: امتحان ${w3_exam}/10 - واجب ${w3_homework}/10</p>
-        <p>الأسبوع 4: امتحان ${w4_exam}/10 - واجب ${w4_homework}/10</p>
-        <p>الامتحان الشامل: ${finalExam}/20</p>
-        <h4>تقدير الطالب: ${percent}%</h4>
-      `;
-    }
-
-    async function loadVideos() {
-      const videos = await fetchCSV(SHEET_VIDEOS);
-      const container = document.getElementById("videos");
-      container.innerHTML = videos.map(v => `
-        <div class="video-card">
-          <p><b>${v.title}</b></p>
-          <p>${v.note}</p>
-          <a href="${v.link}" target="_blank">مشاهدة 🎬</a>
-        </div>
-      `).join("");
-    }
-
-    async function loadContacts() {
-      const contacts = await fetchCSV(SHEET_CONTACTS);
-      const container = document.getElementById("contacts");
-      container.innerHTML = contacts.map(c => {
-        let link = c.type === "whatsapp"
-          ? `https://wa.me/${c.number}`
-          : `tel:${c.number}`;
-        return `
-          <div class="contact-card">
-            <p>${c.label}</p>
-            <a href="${link}" target="_blank">اتصال</a>
-          </div>
-        `;
-      }).join("");
-    }
-
-    loadVideos();
-    loadContacts();
-  </script>
-</body>
-</html>      const res = await fetch(url);
-      const text = await res.text();
-      const rows = text.split("\n").map(r => r.split(","));
-      const headers = rows[0].map(h => h.trim());
-      return rows.slice(1).map(row => {
-        let obj = {};
-        headers.forEach((h, i) => obj[h] = row[i] ? row[i].trim() : "");
-        return obj;
-      });
-    }
-
     // 📌 البحث عن الطالب
     async function searchStudent() {
       const code = document.getElementById("studentCode").value.trim();
@@ -285,4 +201,3 @@
   </script>
 </body>
 </html>
-
