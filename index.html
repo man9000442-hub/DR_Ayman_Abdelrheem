@@ -82,24 +82,24 @@
     }
     .contact-card a:hover { background: #218838; }
 
-    /* 🎨 جدول عصري */
-    table {
+    /* 🔹 جدول الدرجات */
+    .grades-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
+      margin: 15px 0;
+      font-size: 16px;
     }
-    th, td {
+    .grades-table th, .grades-table td {
       border: 1px solid #ddd;
       padding: 10px;
       text-align: center;
-      font-size: 15px;
     }
-    th {
+    .grades-table th {
       background: #007bff;
       color: white;
     }
-    tr:nth-child(even) { background: #f2f2f2; }
-    tr:hover { background: #e9f5ff; }
+    .grades-table tr:nth-child(even) { background: #f2f2f2; }
+    .grades-table tr:hover { background: #e9f7ff; }
   </style>
 </head>
 <body>
@@ -155,19 +155,28 @@
 
       let w1_exam = safeNumber(student.w1_exam);
       let w1_homework = safeNumber(student.w1_homework);
+      let w1_tesmie3 = safeNumber(student.w1_tesmie3);
+
       let w2_exam = safeNumber(student.w2_exam);
       let w2_homework = safeNumber(student.w2_homework);
+      let w2_tesmie3 = safeNumber(student.w2_tesmie3);
+
       let w3_exam = safeNumber(student.w3_exam);
       let w3_homework = safeNumber(student.w3_homework);
+      let w3_tesmie3 = safeNumber(student.w3_tesmie3);
+
       let w4_exam = safeNumber(student.w4_exam);
       let w4_homework = safeNumber(student.w4_homework);
+      let w4_tesmie3 = safeNumber(student.w4_tesmie3);
+
       let finalExam = safeNumber(student.finalExam);
 
       let total = w1_exam + w2_exam + w3_exam + w4_exam +
                   w1_homework + w2_homework + w3_homework + w4_homework +
+                  w1_tesmie3 + w2_tesmie3 + w3_tesmie3 + w4_tesmie3 +
                   finalExam;
 
-      let maxTotal = (4*10) + (4*10) + 20; // 100
+      let maxTotal = (4*10) + (4*10) + (4*10) + 20; // 140
       let percent = ((total / maxTotal) * 100).toFixed(2);
 
       document.getElementById("studentInfo").innerHTML = `
@@ -175,21 +184,14 @@
         <p><b>الصف:</b> ${student.class}</p>
         <p><b>المجموعة:</b> ${student.group}</p>
         <h3>التقييم</h3>
-        <table>
-          <tr>
-            <th>الأسبوع</th>
-            <th>امتحان /10</th>
-            <th>واجب /10</th>
-          </tr>
-          <tr><td>1</td><td>${w1_exam}</td><td>${w1_homework}</td></tr>
-          <tr><td>2</td><td>${w2_exam}</td><td>${w2_homework}</td></tr>
-          <tr><td>3</td><td>${w3_exam}</td><td>${w3_homework}</td></tr>
-          <tr><td>4</td><td>${w4_exam}</td><td>${w4_homework}</td></tr>
-          <tr>
-            <th colspan="2">الامتحان الشامل</th>
-            <td>${finalExam}/20</td>
-          </tr>
+        <table class="grades-table">
+          <tr><th>الأسبوع</th><th>امتحان</th><th>واجب</th><th>تسميع</th></tr>
+          <tr><td>1</td><td>${w1_exam}/10</td><td>${w1_homework}/10</td><td>${w1_tesmie3}/10</td></tr>
+          <tr><td>2</td><td>${w2_exam}/10</td><td>${w2_homework}/10</td><td>${w2_tesmie3}/10</td></tr>
+          <tr><td>3</td><td>${w3_exam}/10</td><td>${w3_homework}/10</td><td>${w3_tesmie3}/10</td></tr>
+          <tr><td>4</td><td>${w4_exam}/10</td><td>${w4_homework}/10</td><td>${w4_tesmie3}/10</td></tr>
         </table>
+        <p>الامتحان الشامل: ${finalExam}/20</p>
         <h4>تقدير الطالب: ${percent}%</h4>
       `;
     }
