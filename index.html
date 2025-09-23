@@ -81,6 +81,25 @@
       font-size: 16px;
     }
     .contact-card a:hover { background: #218838; }
+
+    /* 🎨 جدول عصري */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      font-size: 15px;
+    }
+    th {
+      background: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) { background: #f2f2f2; }
+    tr:hover { background: #e9f5ff; }
   </style>
 </head>
 <body>
@@ -156,11 +175,21 @@
         <p><b>الصف:</b> ${student.class}</p>
         <p><b>المجموعة:</b> ${student.group}</p>
         <h3>التقييم</h3>
-        <p>الأسبوع 1: امتحان ${w1_exam}/10 - واجب ${w1_homework}/10</p>
-        <p>الأسبوع 2: امتحان ${w2_exam}/10 - واجب ${w2_homework}/10</p>
-        <p>الأسبوع 3: امتحان ${w3_exam}/10 - واجب ${w3_homework}/10</p>
-        <p>الأسبوع 4: امتحان ${w4_exam}/10 - واجب ${w4_homework}/10</p>
-        <p>الامتحان الشامل: ${finalExam}/20</p>
+        <table>
+          <tr>
+            <th>الأسبوع</th>
+            <th>امتحان /10</th>
+            <th>واجب /10</th>
+          </tr>
+          <tr><td>1</td><td>${w1_exam}</td><td>${w1_homework}</td></tr>
+          <tr><td>2</td><td>${w2_exam}</td><td>${w2_homework}</td></tr>
+          <tr><td>3</td><td>${w3_exam}</td><td>${w3_homework}</td></tr>
+          <tr><td>4</td><td>${w4_exam}</td><td>${w4_homework}</td></tr>
+          <tr>
+            <th colspan="2">الامتحان الشامل</th>
+            <td>${finalExam}/20</td>
+          </tr>
+        </table>
         <h4>تقدير الطالب: ${percent}%</h4>
       `;
     }
