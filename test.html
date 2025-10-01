@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة الطلاب</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.2/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: linear-gradient(135deg, #f8f8f8, #ececec);
+      overflow-x: hidden;
+    }
+    /* شاشة البداية */
+    .splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.95);
+      z-index: 50;
+      transition: opacity 1s ease;
+    }
+    .splash-box {
+      background: #000;
+      color: #fff;
+      padding: 1.5rem 2.5rem;
+      border-radius: 1rem;
+      font-size: 2rem;
+      font-weight: bold;
+      animation: pop 1.2s ease;
+    }
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .hidden { display: none; }
+    .fade-in { animation: fadeIn 1s ease forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-anim {
+      animation: modalPop 0.4s ease;
+    }
+    @keyframes modalPop {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="text-center">
+
+  <!-- Splash -->
+  <div id="splash" class="splash">
+    <div class="splash-box">الأستاذ</div>
+  </div>
+
+  <!-- العنوان -->
+  <div id="mainTitle" class="hidden w-full bg-white text-red-800 font-bold text-2xl py-3 rounded-r-full rounded-l-full shadow-md">
+    منصة الطلاب
+  </div>
+
+  <!-- الخانات -->
+  <div id="mainMenu" class="hidden flex flex-col items-center justify-center mt-8 gap-4 px-6">
+    <button onclick="openModal('studentModal')" class="bg-red-800 w-full text-white py-4 text-lg rounded-r-full rounded-l-full shadow-md">🔍 البحث عن طالب</button>
+    <button onclick="openModal('videoModal')" class="bg-red-800 w-full text-white py-4 text-lg rounded-r-full rounded-l-full shadow-md">🎥 الفيديوهات</button>
+    <button onclick="openModal('scheduleModal')" class="bg-red-800 w-full text-white py-4 text-lg rounded-r-full rounded-l-full shadow-md">📅 المواعيد</button>
+    <button onclick="openModal('contactModal')" class="bg-red-800 w-full text-white py-4 text-lg rounded-r-full rounded-l-full shadow-md">📞 أرقام التواصل</button>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 px-4">
+    <div id="modalContent" class="modal-anim bg-white rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto text-right shadow-2xl">
+      <div class="flex justify-between items-center mb-4 border-b pb-2">
+        <h2 id="modalTitle" class="text-xl font-bold text-red-800">تفاصيل</h2>
+        <button onclick="closeModal()" class="text-red-700 font-bold text-xl">✖</button>
+      </div>
+      <div id="modalBody" class="text-base"></div>
+    </div>
+  </div>
+
+  <script>
+    // روابط الشيتات (CSV)
+    const SHEET_STUDENTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=635336311&single=true&output=csv";
+    const SHEET_VIDEOS   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=849351073&single=true&output=csv";
+    const SHEET_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=95080328&single=true&output=csv";
+    const SHEET_CONTACTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=218257892&single=true&output=csv";
+
+    // شاشة البداية
+    window.onload = () => {
+      setTimeout(() => {
+        document.getElementById('splash').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('splash').classList.add('hidden');
+          document.getElementById('mainTitle').classList.remove('hidden');
+          document.getElementById('mainTitle').classList.add('fade-in');
+          document.getElementById('mainMenu').classList.remove('hidden');
+          document.getElementById('mainMenu').classList.add('fade-in');
+        }, 1000);
+      }, 2000);
+    };
+
+    function openModal(type) {
+      let body = document.getElementById('modalBody');
+      let title = document.getElementById('modalTitle');
+      body.innerHTML = "⏳ جار التحميل...";
+      document.getElementById('modalOverlay').classList.remove('hidden');
+
+      if (type === 'studentModal') {
+        title.innerText = "🔍 البحث عن طالب";
+        body.innerHTML = `
+          <input id="searchCode" type="text" placeholder="ادخل كود الطالب" class="w-full border p-3 mb-3 rounded text-lg">
+          <button onclick="searchStudent()" class="bg-red-800 text-white py-3 px-5 rounded text-lg w-full">بحث</button>
+          <div id="studentResult" class="mt-4 text-base"></div>
+        `;
+      }
+      if (type === 'videoModal') {
+        title.innerText = "🎥 الفيديوهات";
+        fetchCSV(SHEET_VIDEOS, data => {
+          body.innerHTML = data.map(v => `
+            <div class="bg-red-800 text-white p-3 mb-2 rounded cursor-pointer shadow-md" onclick="window.open('${v.link}')">
+              ${v.title} - ${v.note}
+            </div>`).join('');
+        });
+      }
+      if (type === 'scheduleModal') {
+        title.innerText = "📅 المواعيد";
+        fetchCSV(SHEET_SCHEDULE, data => {
+          body.innerHTML = data.map(s => `
+            <div class="bg-gray-100 p-3 mb-2 rounded shadow">${s.center} - ${s.grade} : ${s.time}</div>`).join('');
+        });
+      }
+      if (type === 'contactModal') {
+        title.innerText = "📞 أرقام التواصل";
+        fetchCSV(SHEET_CONTACTS, data => {
+          body.innerHTML = data.map(c => `
+            <div class="bg-green-600 text-white p-3 mb-2 rounded flex justify-between items-center cursor-pointer shadow-md"
+              onclick="window.open('https://wa.me/${c.number}')">
+              <span>${c.label}</span> <span>📱</span>
+            </div>`).join('');
+        });
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.add('hidden');
+    }
+
+    function fetchCSV(url, callback) {
+      Papa.parse(url, {
+        download: true,
+        header: true,
+        complete: results => callback(results.data)
+      });
+    }
+
+    // البحث عن طالب
+    function searchStudent() {
+      let code = document.getElementById('searchCode').value.trim();
+      fetchCSV(SHEET_STUDENTS, data => {
+        let student = data.find(s => s.code === code);
+        let result = document.getElementById('studentResult');
+        if (student) {
+          result.innerHTML = `
+            <div class="bg-gray-100 p-3 rounded shadow mb-4">
+              <p><b>الاسم:</b> ${student.name}</p>
+              <p><b>الصف:</b> ${student.class}</p>
+              <p><b>المجموعة:</b> ${student.group}</p>
+              <p><b>النسبة المئوية:</b> ${student.percentage || "-"}</p>
+            </div>
+            <table class="w-full border-collapse text-center">
+              <thead>
+                <tr class="bg-red-800 text-white">
+                  <th class="border p-2">الامتحان</th>
+                  <th class="border p-2">الواجب</th>
+                  <th class="border p-2">التسميع</th>
+                  <th class="border p-2">الأسبوعي</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="bg-gray-50">
+                  <td class="border p-2">${student.exam || "-"}</td>
+                  <td class="border p-2">${student.homework || "-"}</td>
+                  <td class="border p-2">${student.revision || "-"}</td>
+                  <td class="border p-2">${student.weekly || "-"}</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+        } else {
+          result.innerHTML = `
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative font-bold text-lg">
+              ⚠️ هذا الطالب غير موجود
+            </div>`;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
