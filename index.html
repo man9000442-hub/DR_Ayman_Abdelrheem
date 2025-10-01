@@ -74,22 +74,36 @@ function openModal(type){
       <button onclick="searchStudent()" class="bg-red-800 text-white py-3 px-5 rounded text-lg w-full">بحث</button>
       <div id="studentResult" class="mt-4 text-base"></div>`;
   }
+
   if(type==='videoModal'){
     title.innerText="🎥 الفيديوهات";
     fetchCSV(SHEET_VIDEOS,data=>{
-      body.innerHTML=data.map(v=>`<div class="bg-red-800 text-white p-3 mb-2 rounded cursor-pointer shadow-md" onclick="window.open('${v.link}')">${v.title} - ${v.note}</div>`).join('');
+      body.innerHTML=data.map(v=>`
+        <div class="bg-red-800 text-white p-3 mb-2 rounded cursor-pointer shadow-md flex items-center gap-2" onclick="window.open('${v.link}')">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png" class="w-6 h-6">
+          <span>${v.title} - ${v.note||''}</span>
+        </div>`).join('');
     });
   }
+
   if(type==='scheduleModal'){
     title.innerText="📅 المواعيد";
     fetchCSV(SHEET_SCHEDULE,data=>{
-      body.innerHTML=data.map(s=>`<div class="bg-gray-100 p-3 mb-2 rounded shadow">${s.center} - ${s.grade} : ${s.time}</div>`).join('');
+      body.innerHTML=data.map(s=>`
+        <div class="bg-gray-100 p-3 mb-2 rounded shadow">
+          ${s.center} - ${s.grade} : ${s.time}
+        </div>`).join('');
     });
   }
+
   if(type==='contactModal'){
     title.innerText="📞 أرقام التواصل";
     fetchCSV(SHEET_CONTACTS,data=>{
-      body.innerHTML=data.map(c=>`<div class="bg-green-600 text-white p-3 mb-2 rounded flex justify-between items-center cursor-pointer shadow-md" onclick="window.open('https://wa.me/${c.number}')"><span>${c.label}</span><span>📱</span></div>`).join('');
+      body.innerHTML=data.map(c=>`
+        <div class="bg-green-600 text-white p-3 mb-2 rounded flex justify-between items-center cursor-pointer shadow-md" onclick="window.open('https://wa.me/${c.number}')">
+          <span>${c.label}</span>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" class="w-5 h-5">
+        </div>`).join('');
     });
   }
 }
