@@ -7,48 +7,15 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.2/papaparse.min.js"></script>
   <style>
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background: linear-gradient(135deg, #f8f8f8, #ececec);
-      overflow-x: hidden;
-    }
-    /* شاشة البداية */
-    .splash {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,0.95);
-      z-index: 50;
-      transition: opacity 1s ease;
-    }
-    .splash-box {
-      background: #000;
-      color: #fff;
-      padding: 1.5rem 2.5rem;
-      border-radius: 1rem;
-      font-size: 2rem;
-      font-weight: bold;
-      animation: pop 1.2s ease;
-    }
-    @keyframes pop {
-      0% { transform: scale(0.5); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
+    body { font-family: 'Tajawal', sans-serif; background: linear-gradient(135deg, #f8f8f8, #ececec); overflow-x: hidden; }
+    .splash { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.95); z-index: 50; transition: opacity 1s ease; }
+    .splash-box { background: #000; color: #fff; padding: 1.5rem 2.5rem; border-radius: 1rem; font-size: 2rem; font-weight: bold; animation: pop 1.2s ease; }
+    @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     .hidden { display: none; }
     .fade-in { animation: fadeIn 1s ease forwards; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .modal-anim {
-      animation: modalPop 0.4s ease;
-    }
-    @keyframes modalPop {
-      from { transform: translateY(50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-anim { animation: modalPop 0.4s ease; }
+    @keyframes modalPop { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   </style>
 </head>
 <body class="text-center">
@@ -83,13 +50,11 @@
   </div>
 
   <script>
-    // روابط الشيتات (CSV)
     const SHEET_STUDENTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=635336311&single=true&output=csv";
     const SHEET_VIDEOS   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=849351073&single=true&output=csv";
     const SHEET_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=95080328&single=true&output=csv";
     const SHEET_CONTACTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=218257892&single=true&output=csv";
 
-    // شاشة البداية
     window.onload = () => {
       setTimeout(() => {
         document.getElementById('splash').style.opacity = '0';
@@ -122,7 +87,7 @@
         fetchCSV(SHEET_VIDEOS, data => {
           body.innerHTML = data.map(v => `
             <div class="bg-red-800 text-white p-3 mb-2 rounded cursor-pointer shadow-md" onclick="window.open('${v.link}')">
-              ${v.title} - ${v.note}
+              ${v.title} - ${v.note || ""}
             </div>`).join('');
         });
       }
@@ -150,52 +115,78 @@
     }
 
     function fetchCSV(url, callback) {
-      Papa.parse(url, {
-        download: true,
-        header: true,
-        complete: results => callback(results.data)
-      });
+      Papa.parse(url, { download: true, header: true, complete: results => callback(results.data) });
     }
 
-    // البحث عن طالب
     function searchStudent() {
       let code = document.getElementById('searchCode').value.trim();
       fetchCSV(SHEET_STUDENTS, data => {
         let student = data.find(s => s.code === code);
         let result = document.getElementById('studentResult');
-        if (student) {
-          result.innerHTML = `
-            <div class="bg-gray-100 p-3 rounded shadow mb-4">
-              <p><b>الاسم:</b> ${student.name}</p>
-              <p><b>الصف:</b> ${student.class}</p>
-              <p><b>المجموعة:</b> ${student.group}</p>
-              <p><b>النسبة المئوية:</b> ${student.percentage || "-"}</p>
-            </div>
-            <table class="w-full border-collapse text-center">
-              <thead>
-                <tr class="bg-red-800 text-white">
-                  <th class="border p-2">الامتحان</th>
-                  <th class="border p-2">الواجب</th>
-                  <th class="border p-2">التسميع</th>
-                  <th class="border p-2">الأسبوعي</th>
+
+        if (!student) {
+          result.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative font-bold text-lg">
+                                ⚠️ هذا الطالب غير موجود
+                              </div>`;
+          return;
+        }
+
+        function safeNumber(val) { return val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0; }
+
+        const w1_exam = safeNumber(student.w1_exam);
+        const w1_homework = safeNumber(student.w1_homework);
+        const w1_tesmie3 = safeNumber(student.w1_tesmie3);
+        const w2_exam = safeNumber(student.w2_exam);
+        const w2_homework = safeNumber(student.w2_homework);
+        const w2_tesmie3 = safeNumber(student.w2_tesmie3);
+        const w3_exam = safeNumber(student.w3_exam);
+        const w3_homework = safeNumber(student.w3_homework);
+        const w3_tesmie3 = safeNumber(student.w3_tesmie3);
+        const w4_exam = safeNumber(student.w4_exam);
+        const w4_homework = safeNumber(student.w4_homework);
+        const w4_tesmie3 = safeNumber(student.w4_tesmie3);
+        const finalExam = safeNumber(student.finalExam);
+
+        const total = w1_exam + w1_homework + w1_tesmie3 +
+                      w2_exam + w2_homework + w2_tesmie3 +
+                      w3_exam + w3_homework + w3_tesmie3 +
+                      w4_exam + w4_homework + w4_tesmie3 +
+                      finalExam;
+
+        const maxTotal = (4 * 10) + (4 * 10) + (4 * 10) + 20;
+        const percent = ((total / maxTotal) * 100).toFixed(2);
+        const percentClass = percent >= 75 ? "text-green-700" : percent >= 50 ? "text-yellow-700" : "text-red-700";
+
+        result.innerHTML = `
+          <h2 class="text-2xl font-bold text-red-800 mb-4">📄 بيانات الطالب</h2>
+          <p><strong>الاسم:</strong> ${student.name || "-"}</p>
+          <p><strong>الصف:</strong> ${student.class || "-"}</p>
+          <p><strong>المجموعة:</strong> ${student.group || "-"}</p>
+
+          <h3 class="text-xl font-semibold text-gray-700 mt-4 mb-2">📊 التقييم</h3>
+
+          <div class="overflow-x-auto">
+            <table class="w-full border border-gray-300 rounded-lg overflow-hidden text-center">
+              <thead class="bg-red-800 text-white">
+                <tr>
+                  <th class="p-2">الأسبوع</th>
+                  <th class="p-2">امتحان (10)</th>
+                  <th class="p-2">واجب (10)</th>
+                  <th class="p-2">تسميع (10)</th>
                 </tr>
               </thead>
               <tbody>
-                <tr class="bg-gray-50">
-                  <td class="border p-2">${student.exam || "-"}</td>
-                  <td class="border p-2">${student.homework || "-"}</td>
-                  <td class="border p-2">${student.revision || "-"}</td>
-                  <td class="border p-2">${student.weekly || "-"}</td>
-                </tr>
+                <tr class="border-b"><td>1</td><td>${w1_exam}</td><td>${w1_homework}</td><td>${w1_tesmie3}</td></tr>
+                <tr class="border-b bg-gray-50"><td>2</td><td>${w2_exam}</td><td>${w2_homework}</td><td>${w2_tesmie3}</td></tr>
+                <tr class="border-b"><td>3</td><td>${w3_exam}</td><td>${w3_homework}</td><td>${w3_tesmie3}</td></tr>
+                <tr class="border-b bg-gray-50"><td>4</td><td>${w4_exam}</td><td>${w4_homework}</td><td>${w4_tesmie3}</td></tr>
               </tbody>
             </table>
-          `;
-        } else {
-          result.innerHTML = `
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative font-bold text-lg">
-              ⚠️ هذا الطالب غير موجود
-            </div>`;
-        }
+          </div>
+
+          <p class="mt-4 font-semibold">الامتحان الشامل: <span class="text-red-800">${finalExam}/20</span></p>
+          <p class="mt-2 font-bold ${percentClass}">النسبة النهائية: ${percent}%</p>
+        `;
       });
     }
   </script>
