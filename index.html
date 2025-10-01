@@ -153,68 +153,113 @@
     }
 
     // البحث عن طالب
-    function searchStudent() {
-      let code = document.getElementById('searchCode').value.trim();
-      fetchCSV(SHEET_STUDENTS, data => {
-        let student = data.find(s => s.code === code);
-        let result = document.getElementById('studentResult');
-        if (student) {
-          // تحويل القيم الرقمية
-          const safeNumber = val => (val === "" || isNaN(parseFloat(val))) ? 0 : parseFloat(val);
-          const w1_exam = safeNumber(student.w1_exam);
-          const w1_homework = safeNumber(student.w1_homework);
-          const w1_tesmie3 = safeNumber(student.w1_tesmie3);
-          const w2_exam = safeNumber(student.w2_exam);
-          const w2_homework = safeNumber(student.w2_homework);
-          const w2_tesmie3 = safeNumber(student.w2_tesmie3);
-          const w3_exam = safeNumber(student.w3_exam);
-          const w3_homework = safeNumber(student.w3_homework);
-          const w3_tesmie3 = safeNumber(student.w3_tesmie3);
-          const w4_exam = safeNumber(student.w4_exam);
-          const w4_homework = safeNumber(student.w4_homework);
-          const w4_tesmie3 = safeNumber(student.w4_tesmie3);
-          const finalExam = safeNumber(student.finalExam);
-          const total = w1_exam + w1_homework + w1_tesmie3 +
-                        w2_exam + w2_homework + w2_tesmie3 +
-                        w3_exam + w3_homework + w3_tesmie3 +
-                        w4_exam + w4_homework + w4_tesmie3 +
-                        finalExam;
-          const maxTotal = (4*10*3) + 20;
-          const percent = ((total/maxTotal)*100).toFixed(2);
-          const percentClass = percent>=75?"text-green-700":percent>=50?"text-yellow-700":"text-red-700";
+ <script>
+  // البحث عن طالب داخل المودال
+  function searchStudent() {
+    let code = document.getElementById('searchCode').value.trim();
+    let result = document.getElementById('studentResult');
 
-          result.innerHTML = `
-            <div class="bg-gray-100 p-3 rounded shadow mb-4 text-right">
-              <p><b>الاسم:</b> ${student.name}</p>
-              <p><b>الصف:</b> ${student.class}</p>
-              <p><b>المجموعة:</b> ${student.group}</p>
-              <p class="mt-2 font-bold ${percentClass}">النسبة النهائية: ${percent}%</p>
-            </div>
-            <table class="w-full border-collapse text-center mb-2">
-              <thead>
-                <tr class="bg-red-800 text-white">
-                  <th class="border p-2">الأسبوع</th>
-                  <th class="border p-2">امتحان</th>
-                  <th class="border p-2">واجب</th>
-                  <th class="border p-2">تسميع</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="bg-gray-50"><td>1</td><td>${w1_exam}</td><td>${w1_homework}</td><td>${w1_tesmie3}</td></tr>
-                <tr><td>2</td><td>${w2_exam}</td><td>${w2_homework}</td><td>${w2_tesmie3}</td></tr>
-                <tr class="bg-gray-50"><td>3</td><td>${w3_exam}</td><td>${w3_homework}</td><td>${w3_tesmie3}</td></tr>
-                <tr><td>4</td><td>${w4_exam}</td><td>${w4_homework}</td><td>${w4_tesmie3}</td></tr>
-              </tbody>
-            </table>
-            <p class="font-semibold text-right">الامتحان الشامل: <span class="text-red-800">${finalExam}/20</span></p>
-          `;
-        } else {
-          result.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative font-bold text-lg">⚠️ هذا الطالب غير موجود</div>`;
-        }
-      });
-       
+    if (!code) {
+      result.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded font-bold text-lg">
+                            ⚠️ اكتب كود الطالب
+                          </div>`;
+      return;
     }
-  </script>
+
+    fetchCSV(SHEET_STUDENTS, data => {
+      let student = data.find(s => s.code === code);
+
+      if (!student) {
+        result.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded font-bold text-lg">
+                              ⚠️ هذا الطالب غير موجود
+                            </div>`;
+        return;
+      }
+
+      // تحويل الدرجات لأرقام مع التعامل مع الخانات الفارغة
+      function safeNumber(val) {
+        return val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
+      }
+
+      const w1_exam = safeNumber(student.w1_exam);
+      const w1_homework = safeNumber(student.w1_homework);
+      const w1_tesmie3 = safeNumber(student.w1_tesmie3);
+
+      const w2_exam = safeNumber(student.w2_exam);
+      const w2_homework = safeNumber(student.w2_homework);
+      const w2_tesmie3 = safeNumber(student.w2_tesmie3);
+
+      const w3_exam = safeNumber(student.w3_exam);
+      const w3_homework = safeNumber(student.w3_homework);
+      const w3_tesmie3 = safeNumber(student.w3_tesmie3);
+
+      const w4_exam = safeNumber(student.w4_exam);
+      const w4_homework = safeNumber(student.w4_homework);
+      const w4_tesmie3 = safeNumber(student.w4_tesmie3);
+
+      const finalExam = safeNumber(student.finalExam);
+
+      const total = w1_exam + w1_homework + w1_tesmie3 +
+                    w2_exam + w2_homework + w2_tesmie3 +
+                    w3_exam + w3_homework + w3_tesmie3 +
+                    w4_exam + w4_homework + w4_tesmie3 +
+                    finalExam;
+
+      const maxTotal = 4*10 + 4*10 + 4*10 + 20; // كل امتحان وواجب وتسميع 10، النهائي 20
+      const percent = ((total / maxTotal) * 100).toFixed(2);
+      const percentClass = percent >= 75 ? "text-green-700" : percent >= 50 ? "text-yellow-700" : "text-red-700";
+
+      result.innerHTML = `
+        <div class="bg-gray-100 p-3 rounded shadow mb-4 text-right">
+          <p><b>الاسم:</b> ${student.name}</p>
+          <p><b>الصف:</b> ${student.class}</p>
+          <p><b>المجموعة:</b> ${student.group}</p>
+        </div>
+
+        <table class="w-full border-collapse text-center mb-4">
+          <thead>
+            <tr class="bg-red-800 text-white">
+              <th class="border p-2">الأسبوع</th>
+              <th class="border p-2">امتحان</th>
+              <th class="border p-2">واجب</th>
+              <th class="border p-2">تسميع</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="bg-gray-50">
+              <td class="border p-2">1</td>
+              <td class="border p-2">${w1_exam}</td>
+              <td class="border p-2">${w1_homework}</td>
+              <td class="border p-2">${w1_tesmie3}</td>
+            </tr>
+            <tr>
+              <td class="border p-2">2</td>
+              <td class="border p-2">${w2_exam}</td>
+              <td class="border p-2">${w2_homework}</td>
+              <td class="border p-2">${w2_tesmie3}</td>
+            </tr>
+            <tr class="bg-gray-50">
+              <td class="border p-2">3</td>
+              <td class="border p-2">${w3_exam}</td>
+              <td class="border p-2">${w3_homework}</td>
+              <td class="border p-2">${w3_tesmie3}</td>
+            </tr>
+            <tr>
+              <td class="border p-2">4</td>
+              <td class="border p-2">${w4_exam}</td>
+              <td class="border p-2">${w4_homework}</td>
+              <td class="border p-2">${w4_tesmie3}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="font-semibold text-right">الامتحان الشامل: <span class="text-red-800">${finalExam}/20</span></p>
+        <p class="font-bold text-right ${percentClass}">النسبة النهائية: ${percent}%</p>
+      `;
+    });
+  }
+</script>
+
 
   <!-- زر واتساب دائري صغير أسفل الشاشة -->
 <a href="https://wa.me/201094724932" target="_blank"
@@ -225,4 +270,5 @@
 
 </body>
 </html>
+
 
