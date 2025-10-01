@@ -49,36 +49,46 @@ body { font-family: 'Tajawal', sans-serif; background: linear-gradient(135deg,#f
 
 <script>
 // روابط الشيتات
-const SHEET_STUDENTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=635336311&single=true&output=csv";
-const SHEET_VIDEOS   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=849351073&single=true&output=csv";
-const SHEET_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=95080328&single=true&output=csv";
-const SHEET_CONTACTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVJaPrWMgs6w3rvMlFQthMSqD2xwaEIUzZnVPs1jwtOF0Masc8dL1c-VCdbSkEw7FR4jYB_J8vmSU7/pub?gid=218257892&single=true&output=csv";
+const SHEET_STUDENTS = "https://docs.google.com/spreadsheets/d/e/.../pub?gid=635336311&single=true&output=csv";
+const SHEET_VIDEOS   = "https://docs.google.com/spreadsheets/d/e/.../pub?gid=849351073&single=true&output=csv";
+const SHEET_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/.../pub?gid=95080328&single=true&output=csv";
+const SHEET_CONTACTS = "https://docs.google.com/spreadsheets/d/e/.../pub?gid=218257892&single=true&output=csv";
 
-// عرض الخانات
-window.onload = () => {
-  document.getElementById('mainTitle').classList.remove('hidden'); 
-  document.getElementById('mainMenu').classList.remove('hidden');
-};
+function fetchCSV(url, callback){
+  Papa.parse(url, {
+    download:true,
+    header:true,
+    skipEmptyLines:true,
+    complete: function(results){
+      if(results.errors.length){
+        console.error("CSV Error:", results.errors);
+        alert("حدث خطأ أثناء تحميل البيانات.");
+      } else {
+        callback(results.data);
+      }
+    }
+  });
+}
 
-// فتح المودال
 function openModal(type){
   let body = document.getElementById('modalBody');
   let title = document.getElementById('modalTitle');
-  body.innerHTML="⏳ جار التحميل...";
+  body.innerHTML = "⏳ جار التحميل...";
   document.getElementById('modalOverlay').classList.remove('hidden');
 
   if(type==='studentModal'){
-    title.innerText="🔍 البحث عن طالب";
-    body.innerHTML=`
+    title.innerText = "🔍 البحث عن طالب";
+    body.innerHTML = `
       <input id="searchCode" type="text" placeholder="ادخل كود الطالب" class="w-full border p-3 mb-3 rounded text-lg">
       <button onclick="searchStudent()" class="bg-red-800 text-white py-3 px-5 rounded text-lg w-full">بحث</button>
       <div id="studentResult" class="mt-4 text-base"></div>`;
   }
 
   if(type==='videoModal'){
-    title.innerText="🎥 الفيديوهات";
-    fetchCSV(SHEET_VIDEOS,data=>{
-      body.innerHTML=data.map(v=>`
+    title.innerText = "🎥 الفيديوهات";
+    fetchCSV(SHEET_VIDEOS, data=>{
+      if(data.length===0){ body.innerHTML = "لا توجد فيديوهات."; return; }
+      body.innerHTML = data.map(v=>`
         <div class="bg-red-800 text-white p-3 mb-2 rounded cursor-pointer shadow-md flex items-center gap-2" onclick="window.open('${v.link}')">
           <img src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png" class="w-6 h-6">
           <span>${v.title} - ${v.note||''}</span>
@@ -87,9 +97,10 @@ function openModal(type){
   }
 
   if(type==='scheduleModal'){
-    title.innerText="📅 المواعيد";
-    fetchCSV(SHEET_SCHEDULE,data=>{
-      body.innerHTML=data.map(s=>`
+    title.innerText = "📅 المواعيد";
+    fetchCSV(SHEET_SCHEDULE, data=>{
+      if(data.length===0){ body.innerHTML = "لا توجد مواعيد."; return; }
+      body.innerHTML = data.map(s=>`
         <div class="bg-gray-100 p-3 mb-2 rounded shadow">
           ${s.center} - ${s.grade} : ${s.time}
         </div>`).join('');
@@ -97,9 +108,10 @@ function openModal(type){
   }
 
   if(type==='contactModal'){
-    title.innerText="📞 أرقام التواصل";
-    fetchCSV(SHEET_CONTACTS,data=>{
-      body.innerHTML=data.map(c=>`
+    title.innerText = "📞 أرقام التواصل";
+    fetchCSV(SHEET_CONTACTS, data=>{
+      if(data.length===0){ body.innerHTML = "لا توجد أرقام."; return; }
+      body.innerHTML = data.map(c=>`
         <div class="bg-green-600 text-white p-3 mb-2 rounded flex justify-between items-center cursor-pointer shadow-md" onclick="window.open('https://wa.me/${c.number}')">
           <span>${c.label}</span>
           <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" class="w-5 h-5">
@@ -108,22 +120,15 @@ function openModal(type){
   }
 }
 
-// إغلاق المودال
 function closeModal(){ document.getElementById('modalOverlay').classList.add('hidden'); }
 
-// تحميل CSV
-function fetchCSV(url,callback){
-  Papa.parse(url,{download:true,header:true,complete:results=>callback(results.data)});
-}
-
-// البحث عن طالب
 function searchStudent(){
-  let code=document.getElementById('searchCode').value.trim().toLowerCase();
-  let result=document.getElementById('studentResult');
+  let code = document.getElementById('searchCode').value.trim().toLowerCase();
+  let result = document.getElementById('studentResult');
   if(!code){ result.innerHTML=`<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded font-bold text-lg">⚠️ اكتب كود الطالب</div>`; return; }
 
-  fetchCSV(SHEET_STUDENTS,data=>{
-    let student=data.find(s=>(s.code||"").trim().toLowerCase()===code);
+  fetchCSV(SHEET_STUDENTS, data=>{
+    let student = data.find(s=>(s.code||"").trim().toLowerCase()===code);
     if(!student){ result.innerHTML=`<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded font-bold text-lg">⚠️ هذا الطالب غير موجود</div>`; return; }
 
     function safeNumber(val){ return val && !isNaN(parseFloat(val))?parseFloat(val):0; }
@@ -163,3 +168,4 @@ function searchStudent(){
 </script>
 </body>
 </html>
+
