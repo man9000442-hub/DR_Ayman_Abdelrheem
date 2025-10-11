@@ -228,7 +228,7 @@
   </footer>
 
   <script>
-    const QUESTIONS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz82GTuS8vE68wEuxTGjYbb-_8k3jUyGow42DSpGMazQ_B2hSxHiBLxVrH9tRYNDeb2/exec";
+    const QUESTIONS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbytMc4kaG6z02LuJSPKpl2TK5LQttwq-0lUMR5YacgipZVOGqrmwIQ9cdt4OgO1L7NO/exec";
     const RESULTS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweD0ZYWcSZ9q4sIn3t0OAVTIWhvoqNa67AuDkRPbukAu1w7EZfl1NaBQXbKGyq-Trw/exec";
 
     let selectedGrade = "";
@@ -256,7 +256,7 @@
 
     async function loadQuestions() {
       try {
-        const res = await fetch(`${QUESTIONS_SCRIPT_URL}?grade=${selectedGrade}`);
+  const res = await fetch(`${QUESTIONS_SCRIPT_URL}?grade=${selectedGrade}`);
         const data = await res.json();
 
         if (!data.questions || data.questions.length === 0) {
@@ -357,8 +357,8 @@
 
       // Send results to server
       try {
-        await fetch(RESULTS_SCRIPT_URL, {
-          method: "POST",
+        const response = await fetch(RESULTS_SCRIPT_URL, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -370,8 +370,15 @@
             total: currentQuestions.length
           })
         });
+        // Try to parse response (if CORS enabled)
+        // const result = await response.json();
+        // if (result.status === "error") {
+        //   throw new Error(result.message);
+        // }
+        console.log("Results sent successfully");
       } catch(err) {
         console.error("Failed to send results:", err);
+        alert("حدث خطأ في حفظ النتيجة، برجاء المحاولة مرة أخرى");
       }
     }
 
@@ -524,8 +531,6 @@
   </script>
 </body>
 </html>
-
-
 
 
 
