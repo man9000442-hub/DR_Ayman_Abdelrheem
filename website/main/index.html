@@ -305,25 +305,21 @@
 
         const w1_exam = safeNumber(student.w1_exam);
         const w1_homework = safeNumber(student.w1_homework);
-        const w1_tesmie3 = safeNumber(student.w1_tesmie3);
         const w2_exam = safeNumber(student.w2_exam);
         const w2_homework = safeNumber(student.w2_homework);
-        const w2_tesmie3 = safeNumber(student.w2_tesmie3);
         const w3_exam = safeNumber(student.w3_exam);
         const w3_homework = safeNumber(student.w3_homework);
-        const w3_tesmie3 = safeNumber(student.w3_tesmie3);
         const w4_exam = safeNumber(student.w4_exam);
         const w4_homework = safeNumber(student.w4_homework);
-        const w4_tesmie3 = safeNumber(student.w4_tesmie3);
         const finalExam = safeNumber(student.finalExam);
 
-        const total = w1_exam + w1_homework + w1_tesmie3 +
-                      w2_exam + w2_homework + w2_tesmie3 +
-                      w3_exam + w3_homework + w3_tesmie3 +
-                      w4_exam + w4_homework + w4_tesmie3 +
+        const total = w1_exam + w1_homework +
+                      w2_exam + w2_homework +
+                      w3_exam + w3_homework +
+                      w4_exam + w4_homework +
                       finalExam;
 
-        const maxTotal = (4 * 10) + (4 * 10) + (4 * 10) + 20;
+        const maxTotal = (4 * 10) + (4 * 10) + 20;
         const percent = ((total / maxTotal) * 100).toFixed(2);
 
         // Determine grade status
@@ -390,7 +386,6 @@
                     <th class="p-3 text-center">الأسبوع</th>
                     <th class="p-3 text-center">امتحان (10)</th>
                     <th class="p-3 text-center">واجب (10)</th>
-                    <th class="p-3 text-center">تسميع (10)</th>
                     <th class="p-3 text-center">المجموع</th>
                   </tr>
                 </thead>
@@ -399,29 +394,25 @@
                     <td class="p-3 text-center">1</td>
                     <td class="p-3 text-center">${w1_exam}</td>
                     <td class="p-3 text-center">${w1_homework}</td>
-                    <td class="p-3 text-center">${w1_tesmie3}</td>
-                    <td class="p-3 text-center font-semibold">${w1_exam + w1_homework + w1_tesmie3}</td>
+                    <td class="p-3 text-center font-semibold">${w1_exam + w1_homework}</td>
                   </tr>
                   <tr class="border-b hover:bg-gray-50 bg-gray-50">
                     <td class="p-3 text-center">2</td>
                     <td class="p-3 text-center">${w2_exam}</td>
                     <td class="p-3 text-center">${w2_homework}</td>
-                    <td class="p-3 text-center">${w2_tesmie3}</td>
-                    <td class="p-3 text-center font-semibold">${w2_exam + w2_homework + w2_tesmie3}</td>
+                    <td class="p-3 text-center font-semibold">${w2_exam + w2_homework}</td>
                   </tr>
                   <tr class="border-b hover:bg-gray-50">
                     <td class="p-3 text-center">3</td>
                     <td class="p-3 text-center">${w3_exam}</td>
                     <td class="p-3 text-center">${w3_homework}</td>
-                    <td class="p-3 text-center">${w3_tesmie3}</td>
-                    <td class="p-3 text-center font-semibold">${w3_exam + w3_homework + w3_tesmie3}</td>
+                    <td class="p-3 text-center font-semibold">${w3_exam + w3_homework}</td>
                   </tr>
                   <tr class="border-b hover:bg-gray-50 bg-gray-50">
                     <td class="p-3 text-center">4</td>
                     <td class="p-3 text-center">${w4_exam}</td>
                     <td class="p-3 text-center">${w4_homework}</td>
-                    <td class="p-3 text-center">${w4_tesmie3}</td>
-                    <td class="p-3 text-center font-semibold">${w4_exam + w4_homework + w4_tesmie3}</td>
+                    <td class="p-3 text-center font-semibold">${w4_exam + w4_homework}</td>
                   </tr>
                 </tbody>
               </table>
@@ -693,5 +684,4 @@
   </script>
 </body>
 </html>
-
 
