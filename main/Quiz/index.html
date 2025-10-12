@@ -227,8 +227,8 @@
   </footer>
 
   <script>
-    const QUESTIONS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQzCuh4zV_okGAQ9o8un-nTR15OuCz6jw9ttwz1XMHt1V2y5lyFxcsRZfYsiqCZ1yjeA/exec";
-    const RESULTS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCkXrFN1WKK7OtS8dHdKqvVuZa7ZE6Kwqv0bvLUgscxJA7IGlw5LF1fP41OE0BdMAR/exec";
+    const QUESTIONS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfzIMl_OW-_CZHwPzIya5pEO_DCqn40w8zLa4fzhryWh9VF5qM3GrFieyzkGF5ONjyqg/exec";
+    const RESULTS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPBVjMLui-Wa1keiUCPGY3TOVRt6SIFaucMa0lj-fZrHriggLj_RqntIp2X0aFHRT2Zg/exec";
 
     let selectedGrade = "";
     let studentCode = "";
@@ -526,7 +526,7 @@ function showError(message) {
       document.getElementById('studentGrade').value = "";
     }
 function submitResult(studentCode, grade, score) {
-  const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbzCkXrFN1WKK7OtS8dHdKqvVuZa7ZE6Kwqv0bvLUgscxJA7IGlw5LF1fP41OE0BdMAR/exec";
+  const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbyPBVjMLui-Wa1keiUCPGY3TOVRt6SIFaucMa0lj-fZrHriggLj_RqntIp2X0aFHRT2Zg/exec";
 
   // حذف أي سكريبت قديم
   const oldScript = document.getElementById("jsonpSubmit");
@@ -558,6 +558,7 @@ function handleResultResponse(data) {
   </script>
 </body>
 </html>
+
 
 
 
