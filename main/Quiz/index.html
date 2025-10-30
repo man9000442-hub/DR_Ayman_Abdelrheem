@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منصة الاريب للامتحانات</title>
+  <title>منصة الكويز</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -153,9 +153,9 @@
   <header class="w-full max-w-md mb-8 text-center">
     <div class="card p-6">
       <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-        منصة الاريب للامتحانات
+        منصة الكويز
       </h1>
-      <p class="mt-2 text-gray-600"> امتحانات اللغه العربه </p>
+      <p class="mt-2 text-gray-600">اختبار معلوماتك الآن</p>
     </div>
   </header>
 
@@ -227,8 +227,8 @@
   </footer>
 
   <script>
-    const QUESTIONS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfzIMl_OW-_CZHwPzIya5pEO_DCqn40w8zLa4fzhryWh9VF5qM3GrFieyzkGF5ONjyqg/exec";
-    const RESULTS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPBVjMLui-Wa1keiUCPGY3TOVRt6SIFaucMa0lj-fZrHriggLj_RqntIp2X0aFHRT2Zg/exec";
+    const QUESTIONS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxA8z6hozC2z17oFlAsRHEHmEpbvFDa8e2vhwtfovIleX56X3XCGHp9t9dUYuzs1iTX/exec";
+    const RESULTS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcAE07LgFXidpCq7iyhK5TkB096f9TLWX4POMh45RlpngT_ytKvezgxB0t3U7rwskUqg/exec";
 
     let selectedGrade = "";
     let studentCode = "";
@@ -526,7 +526,7 @@ function showError(message) {
       document.getElementById('studentGrade').value = "";
     }
 function submitResult(studentCode, grade, score) {
-  const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbyPBVjMLui-Wa1keiUCPGY3TOVRt6SIFaucMa0lj-fZrHriggLj_RqntIp2X0aFHRT2Zg/exec";
+  const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbxcAE07LgFXidpCq7iyhK5TkB096f9TLWX4POMh45RlpngT_ytKvezgxB0t3U7rwskUqg/exec";
 
   // حذف أي سكريبت قديم
   const oldScript = document.getElementById("jsonpSubmit");
@@ -558,7 +558,6 @@ function handleResultResponse(data) {
   </script>
 </body>
 </html>
-
 
 
 
