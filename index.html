@@ -297,31 +297,40 @@ $('showBtn').addEventListener('click', async () => {
     }
 
     // 2) جلب شيت Videos
-    const videosRows = await fetchSheetAsArray(SPREADSHEET_ID, SHEET_NAMES.videos);
-    // نتوقع جدول بسيط: عمود اسم الدرس — عمود رابط الفيديو
-    const videosMap = {}; // lesson -> link
-    if (videosRows && videosRows.length > 0) {
-      // نحاول اكتشاف الأعمدة: غالبًا العمود الأول اسم، الثاني رابط
-      // لكن سنتعامل بمرونة: لو أول صف رؤوس وحتشمل 'lesson' أو 'درس' و 'link'، نتخطى
-      let startRow = 0;
-      const firstRow = videosRows[0].map(c => (c||'').toString().toLowerCase());
-      const headerCandidates = ['lesson','درس','name','video','link','لينك','url'];
-      if (firstRow.some(c => headerCandidates.some(h => c.includes(h)))) startRow = 1;
+    // 2) جلب شيت Videos
+const videosRows = await fetchSheetAsArray(SPREADSHEET_ID, SHEET_NAMES.videos);
+const videosMap = {}; // key: Grade + Name -> Link
 
-      // افتراض: العمود الأول اسم، العمود الثاني رابط — لكن لو فيه أكثر حاول اختيار أعمدة ذكية
-      for (let r = startRow; r < videosRows.length; r++) {
-        const row = videosRows[r];
-        const name = (row[0] || '').toString().trim();
-        const link = (row[1] || '').toString().trim();
-        if (name && link) videosMap[name] = link;
-      }
+if (videosRows && videosRows.length > 0) {
+  let startRow = 0;
+  const firstRow = videosRows[0].map(c => (c||'').toString().toLowerCase());
+  const headerCandidates = ['lesson','درس','name','video','link','لينك','url'];
+  if (firstRow.some(c => headerCandidates.some(h => c.includes(h)))) startRow = 1;
+
+  // الأعمدة بالترتيب: [0]=Grade, [1]=Name, [2]=Link
+  for (let r = startRow; r < videosRows.length; r++) {
+    const row = videosRows[r];
+    const grade = (row[0] || '').toString().trim();
+    const name  = (row[1] || '').toString().trim();
+    const link  = (row[2] || '').toString().trim();
+
+    if (grade && name && link) {
+      // المفتاح = الصف + اسم الدرس
+      const key = `${grade}_${name}`;
+      videosMap[key] = link;
+    }
+  }
+}
+
       // أيضاً حاول البحث إذا كان الصف الأول يتضمن أزواج اسم/لينك بشكل مختلف
       // (لو لم يعطِ شيء، سنعطي المستخدم خيار إدخال لينك يدوي)
     }
 
     // 3) جلب اللينك من الخريطة
-    const lesson = found.lessonName;
-    let link = videosMap[lesson];
+   const lesson = found.lessonName;
+   const gradeName = $('gradeSelect').options[$('gradeSelect').selectedIndex].text.trim();
+   const key = `${gradeName}_${lesson}`;
+   let link = videosMap[key];
 
     if (!link) {
       // ابراز منطقة الإدخال اليدوي
