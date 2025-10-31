@@ -261,10 +261,6 @@ if (savedMaster) masterEl.textContent = savedMaster;
 else masterEl.textContent = MASTER_NAME;
 
 /* زر الامتحانات */
-$('examsBtn').addEventListener('click', () => {
-  const url = (EXAMS_URL && EXAMS_URL !== "https://your-exams-site.example") ? EXAMS_URL : prompt("ضع رابط صفحة الامتحانات:");
-  if (url) window.open(url, '_blank');
-});
 
 /* زر عرض المحاضرة */
 $('showBtn').addEventListener('click', async () => {
