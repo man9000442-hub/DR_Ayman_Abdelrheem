@@ -107,7 +107,7 @@
   </footer>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzcVFkcNjuDJ2QHjjip9s9HxdyArAuyP3FguBMKkpfU2T-QBGg_x0_LiGhcBTVPOf871g/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwOtziB5SqyQ2oGgts5YYUV7Acg8Wb1Kb14-Ly_wIxV1Y_h9zCrQNmiXsWlYFzDC2yv7g/exec";
 
     let questions = [];
     let correctAnswers = {};
@@ -240,12 +240,20 @@
       try {
         await fetch(scriptURL, {
           method: "POST",
+          headers: {
+             "Content-Type": "application/json", // ضروري جدًا علشان يتعرف كـ JSON
+          },
           body: JSON.stringify({
             type: "saveResult",
             className: classNames[selectedClass],
-            name, phone, score, total, wrong: JSON.stringify(wrong)
-          })
+            name: name,
+            phone: phone,
+            score: score,
+            total: total,
+            wrong: wrong // خلاص مش محتاج JSON.stringify هنا
+          }),
         });
+
       } catch (error) {
         console.error('Failed to save result:', error);
       }
@@ -254,4 +262,5 @@
 </body>
 
 </html>
+
 
