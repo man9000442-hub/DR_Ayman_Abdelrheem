@@ -106,9 +106,8 @@
     </a>
   </footer>
 
- <script>
-    // هذا الرابط يجب أن يكون هو الرابط الخاص بك الذي حصلت عليه بعد النشر
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxsL-9lzfm9_GKdERE_YK_j9Cb4j-RlKnRvAuTE9cqgsWaYm76C1VUBPRiiesVYWIWTLQ/exec"; 
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbz24lqKkj5skS9PTzLYHH8kp8iUEx7deJernEG7MKXW5Me2z8CcYH4ylP6emBtEso-h/exec";
 
     let questions = [];
     let correctAnswers = {};
@@ -119,45 +118,8 @@
       g1: "أولى إعدادي", g2: "تانية إعدادي", g3: "تالتة إعدادي",
       s1: "أولى ثانوي", s2: "تانية ثانوي", s3: "تالتة ثانوي"
     };
-    
-    // ===============================================
-    // دالة مساعدة للاتصال (تستخدم XHR بدلاً من Fetch)
-    // ===============================================
-    function sendDataToScript(data, successCallback, errorCallback) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', scriptURL, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        successCallback(response);
-                    } catch (e) {
-                        console.error("Error parsing JSON response:", e, xhr.responseText);
-                        errorCallback("استجابة غير صالحة من الخادم");
-                    }
-                } else {
-                    console.error("Request failed with status:", xhr.status, xhr.responseText);
-                    errorCallback("فشل الاتصال بالخادم. الحالة: " + xhr.status);
-                }
-            }
-        };
 
-        xhr.onerror = function() {
-            console.error("XHR failed to send or receive data.");
-            errorCallback("فشل في إرسال الطلب (خطأ شبكة/CORS)");
-        };
-
-        xhr.send(JSON.stringify(data));
-    }
-
-
-    // ===============================================
-    // معالج بدء الاختبار (Start Quiz Handler)
-    // ===============================================
-    document.getElementById("startBtn").addEventListener("click", () => {
+    document.getElementById("startBtn").addEventListener("click", async () => {
       selectedClass = document.getElementById("classSelect").value;
       if (!selectedClass) {
         alert("من فضلك اختر الصف الدراسي أولاً");
@@ -167,34 +129,20 @@
       document.getElementById("startBtn").textContent = "جاري تحميل الأسئلة...";
       document.getElementById("startBtn").disabled = true;
 
-      const dataToSend = { type: "getQuestions", classSheet: `questions_${selectedClass}` };
-      
-      sendDataToScript(dataToSend, (res) => {
-        // التحقق من أن الاستجابة هي مصفوفة أسئلة أو كائن نجاح
-        if (Array.isArray(res) && res.length > 0) {
-            questions = res;
-        } else if (res && res.status === 'error') {
-             // إذا أعاد Apps Script كائن خطأ
-             alert(`حدث خطأ أثناء تحميل الأسئلة: ${res.message}`);
-             document.getElementById("startBtn").textContent = "ابدأ الاختبار";
-             document.getElementById("startBtn").disabled = false;
-             return;
-        } else if (Array.isArray(res) && res.length === 0) {
-             alert("لا توجد أسئلة متاحة لهذا الصف حالياً.");
-             document.getElementById("startBtn").textContent = "ابدأ الاختبار";
-             document.getElementById("startBtn").disabled = false;
-             return;
-        }
-
+      try {
+        let res = await fetch(scriptURL, {
+          method: "POST",
+          body: JSON.stringify({ type: "getQuestions", classSheet: `questions_${selectedClass}` })
+        });
+        questions = await res.json();
         showQuestions();
         document.getElementById("classSelection").classList.add("hidden");
         document.getElementById("quizSection").classList.remove("hidden");
-        
-      }, (errorMessage) => {
-          alert("حدث خطأ أثناء تحميل الأسئلة. حاول مرة أخرى. (" + errorMessage + ")");
-          document.getElementById("startBtn").textContent = "ابدأ الاختبار";
-          document.getElementById("startBtn").disabled = false;
-      });
+      } catch (error) {
+        alert("حدث خطأ أثناء تحميل الأسئلة. حاول مرة أخرى.");
+        document.getElementById("startBtn").textContent = "ابدأ الاختبار";
+        document.getElementById("startBtn").disabled = false;
+      }
     });
 
     function showQuestions() {
@@ -232,11 +180,7 @@
       });
     }
 
-
-    // ===============================================
-    // معالج إرسال الإجابات (Submit Handler)
-    // ===============================================
-    document.getElementById("submitBtn").addEventListener("click", (e) => {
+    document.getElementById("submitBtn").addEventListener("click", async (e) => {
       e.preventDefault();
       const name = document.getElementById("studentName").value.trim();
       const phone = document.getElementById("studentPhone").value.trim();
@@ -249,22 +193,18 @@
       document.getElementById("submitBtn").textContent = "جاري التصحيح...";
 
       let score = 0, wrong = [], total = questions.length;
-      
-      // عملية التصحيح (تبقى كما هي)
       questions.forEach(q => {
         const selectedRadio = document.querySelector(`input[name="${q.id}"]:checked`);
-        const card = selectedRadio ? selectedRadio.closest(".card") : document.querySelector(`input[name="${q.id}"]`)?.closest('.card');
+        const card = selectedRadio ? selectedRadio.closest(".card") : document.querySelector(`input[name="${q.id}"]`).closest('.card');
         
-        // إظهار الإجابة الصحيحة
         document.querySelectorAll(`input[name="${q.id}"]`).forEach(opt => {
           const label = opt.parentElement;
-          label.classList.remove('selected-answer'); 
+          label.classList.remove('selected-answer'); // Clear selection style
           if (opt.value === q.correct) {
             label.classList.add('correct-answer');
           }
         });
 
-        // تحديد ما إذا كانت الإجابة خاطئة أو لم يُجب عليها
         if (selectedRadio) {
           const selectedLabel = selectedRadio.parentElement;
           if (selectedRadio.value === q.correct) {
@@ -272,7 +212,7 @@
           } else {
             selectedLabel.classList.add('incorrect-answer');
             wrong.push(q.id);
-            if (q.explanation && card) {
+            if (q.explanation) {
               const exp = document.createElement("div");
               exp.className = "explanation";
               exp.innerHTML = `<b>💡 الشرح:</b> ${q.explanation}`;
@@ -280,8 +220,8 @@
             }
           }
         } else {
-            wrong.push(q.id); // لم يقم بالإجابة
-             if (q.explanation && card) {
+            wrong.push(q.id);
+             if (q.explanation) {
               const exp = document.createElement("div");
               exp.className = "explanation";
               exp.innerHTML = `<b>💡 الشرح:</b> ${q.explanation}`;
@@ -289,41 +229,39 @@
             }
         }
       });
-      
-      // عرض النتيجة
+
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = `✅ نتيجتك النهائية: ${score} / ${total}`;
       resultDiv.classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       document.getElementById("submitBtn").style.display = 'none';
-      
-      // إرسال النتيجة إلى Google Sheets باستخدام الدالة الموثوقة
-      const resultData = {
+
+      try {
+        await fetch(scriptURL, {
+          method: "POST",
+          headers: {
+             "Content-Type": "application/json", // ضروري جدًا علشان يتعرف كـ JSON
+          },
+          body: JSON.stringify({
             type: "saveResult",
             className: classNames[selectedClass],
             name: name,
             phone: phone,
             score: score,
             total: total,
-            wrong: wrong
-      };
-      
-      sendDataToScript(resultData, (res) => {
-          console.log('Result saved successfully:', res);
-          // لا يوجد حاجة لإظهار رسالة نجاح هنا
-      }, (errorMessage) => {
-          console.error('Failed to save result:', errorMessage);
-          alert('تم احتساب النتيجة، ولكن فشل تسجيلها في قاعدة البيانات. يرجى التواصل مع المستر.');
-      });
-      
+            wrong: wrong // خلاص مش محتاج JSON.stringify هنا
+          }),
+        });
+
+      } catch (error) {
+        console.error('Failed to save result:', error);
+      }
     });
   </script>
 </body>
 
 </html>
-
-
 
 
 
