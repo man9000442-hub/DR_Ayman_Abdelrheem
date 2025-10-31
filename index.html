@@ -353,49 +353,111 @@ $('showBtn').addEventListener('click', async () => {
 });
 
 function loadAndShowVideo(rawLink, lesson) {
-  // ✅ دالة لتحويل أي لينك يوتيوب إلى شكل embed
   function convertYouTubeLink(link) {
-  if (!link) return "";
-  link = link.trim();
+    if (!link) return "";
+    link = link.trim();
+    // إزالة باراميترات محتشمة قد تكسر الـ embed
+    // نأخذ جزء قبل أول ? أو &
+    link = link.split('?')[0].split('&')[0];
 
-  // تنظيف أي باراميتر إضافي بعد الفيديو
-  link = link.split("&")[0];
-  link = link.split("?si=")[0]; // يشيل السيكشن ده اللي بيكسر اللينك أحيانًا
-
-  // لو الرابط بصيغة youtu.be
-  if (link.includes("youtu.be/")) {
-    const id = link.split("youtu.be/")[1];
-    return `https://www.youtube.com/embed/${id}`;
-  }
-
-  // لو الرابط بصيغة watch?v=
-  if (link.includes("watch?v=")) {
-    const id = link.split("watch?v=")[1];
-    return `https://www.youtube.com/embed/${id}`;
-  }
-
-  // لو بالفعل embed
-  if (link.includes("/embed/")) {
+    // youtu.be/id
+    if (link.includes("youtu.be/")) {
+      const id = link.split("youtu.be/")[1].split('/')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    // watch?v=id
+    if (link.includes("watch?v=")) {
+      const id = link.split("watch?v=")[1].split('&')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    // لو رابط فيه embed أصلًا
+    if (link.includes("/embed/")) {
+      return link.split('?')[0];
+    }
+    // لو الرابط يبدو أنه فقط id
+    if (/^[A-Za-z0-9_-]{6,}$/.test(link)) {
+      return `https://www.youtube.com/embed/${link}`;
+    }
+    // fallback: نُعيد كما هو
     return link;
   }
 
-  // fallback لو مش يوتيوب
-  return link;
-}
+  // تنظيف وتحويل
+  const raw = (rawLink || '').toString();
+  const final = convertYouTubeLink(raw);
 
+  // طباعة مفصّلة في الـ Console
+  console.log("DEBUG: rawLink from sheet ->", raw);
+  console.log("DEBUG: converted embed link ->", final);
 
-  // 🧩 تحويل الرابط العادي إلى embed
-  const final = convertYouTubeLink(rawLink);
+  // اظهار رابط قابل للفتح تحت الفيديو (لو فيه عنصر debugArea نصيه سننشئه)
+  let dbg = document.getElementById('debugLinkArea');
+  if (!dbg) {
+    dbg = document.createElement('div');
+    dbg.id = 'debugLinkArea';
+    dbg.style.marginTop = '8px';
+    dbg.style.fontSize = '13px';
+    dbg.style.color = '#444';
+    dbg.style.wordBreak = 'break-all';
+    const parent = document.querySelector('.video-wrap') || document.body;
+    parent.appendChild(dbg);
+  }
+  dbg.innerHTML = `<b>Raw:</b> ${escapeHtml(raw)}<br><b>Embed:</b> <a id="dbgOpen" href="${final}" target="_blank" rel="noopener">${final}</a>`;
 
-  // عرض الفيديو في الإطار
+  // عرض في الإطار مع handlers
   const frame = $('videoFrame');
-  frame.src = final;
-  frame.style.display = 'block';
+  frame.style.display = 'none';
+  frame.src = ''; // reset
   $('videoTitle').textContent = lesson;
-  $('videoStatus').textContent = 'يتم عرض المحاضرة الآن';
-  $('loadingRow').style.display = 'none';
-  showSnackbar('تم عرض المحاضرة بنجاح', 'success', 2500);
+  $('videoStatus').textContent = 'جاري تحميل المحاضرة...';
+  $('loadingRow').style.display = 'flex';
+  $('manualArea').style.display = 'none';
+
+  // timeout للكشف عن مشاكل (7s)
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    $('loadingRow').style.display = 'none';
+    $('videoStatus').textContent = 'فشل تحميل (timeout)';
+    showSnackbar('فشل تحميل الفيديو خلال 7 ثوانٍ. افتح الرابط اليدوي للتحقق.', 'error', 6000);
+    // نبرز زر فتح الرابط اليدوي تلقائيًا
+    document.getElementById('dbgOpen').click(); // سيفتح تبويب جديد تلقائياً — يمكن تعليق هذا السطر لو لا تريد الفتح الآلي
+  }, 7000);
+
+  // onload/onerror
+  frame.onload = function() {
+    if (timedOut) return;
+    clearTimeout(timeoutId);
+    $('loadingRow').style.display = 'none';
+    frame.style.display = 'block';
+    $('videoStatus').textContent = 'يتم عرض المحاضرة الآن';
+    showSnackbar('تم عرض المحاضرة بنجاح', 'success', 2000);
+  };
+  frame.onerror = function() {
+    clearTimeout(timeoutId);
+    $('loadingRow').style.display = 'none';
+    $('videoStatus').textContent = 'فشل تحميل المحاضرة (iframe error)';
+    showSnackbar('فشل تحميل المحاضرة داخل الإطار. افتح الرابط اليدوي للتحقق.', 'error', 6000);
+  };
+
+  // ضع src
+  try {
+    frame.src = final;
+    console.log("DEBUG: iframe.src set ->", frame.src);
+  } catch (e) {
+    clearTimeout(timeoutId);
+    $('loadingRow').style.display = 'none';
+    $('videoStatus').textContent = 'خطأ عند تعيين src';
+    console.error("DEBUG: setting iframe.src threw:", e);
+    showSnackbar('تعذر تعيين رابط الفيديو للإطار (خطأ داخلي).', 'error', 6000);
+  }
+
+  // HTML escape للمخرجات
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (m) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
+  }
 }
+
 
 
 /* =========================
