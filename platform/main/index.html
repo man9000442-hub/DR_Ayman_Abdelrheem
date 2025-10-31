@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>بوابة المحاضرات</title>
+  <style>
+    :root{
+      --accent: #0b74ff;
+      --accent-dark: #0a5ee0;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Segoe UI", "Noto Naskh Arabic", Tahoma, Arial, sans-serif;
+      background: linear-gradient(180deg,#f7fbff 0%,var(--bg) 100%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      padding:28px;
+      direction: rtl;
+    }
+    .container{max-width:920px;margin:0 auto}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{
+      width:64px;height:64px;border-radius:14px;
+      background:linear-gradient(135deg,var(--accent),#6d28d9);
+      color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;
+      box-shadow:0 8px 26px rgba(11,116,255,0.12);
+    }
+    .title h1{margin:0;font-size:20px}
+    .title p{margin:0;font-size:13px;color:var(--muted)}
+    .master{
+      text-align:right;
+    }
+    .master .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .master .name{
+      display:inline-block;padding:8px 12px;border-radius:10px;background:var(--card);box-shadow:0 2px 8px rgba(15,23,42,0.06);
+      cursor:text;font-weight:700;
+    }
+
+    main{display:grid;grid-template-columns:1fr;gap:18px}
+
+    .card{
+      background:var(--card);border-radius:12px;padding:18px;box-shadow:0 8px 30px rgba(15,23,42,0.04);
+    }
+
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:8px}
+    select, input[type="text"], input[type="url"]{
+      width:100%;padding:12px 14px;border-radius:10px;border:1px solid #e6eef9;background:#fbfdff;font-size:15px;
+      outline:none;
+    }
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .col{flex:1;min-width:180px}
+
+    .btn{
+      display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:12px;border:0;background:var(--accent);color:white;font-weight:800;cursor:pointer;
+      box-shadow:0 8px 20px rgba(11,116,255,0.12);
+    }
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(11,116,255,0.12);box-shadow:none}
+    .muted{color:var(--muted);font-size:13px}
+
+    .video-wrap{margin-top:14px;display:flex;flex-direction:column;gap:12px;align-items:center}
+    iframe.video{width:100%;height:480px;border-radius:12px;border:none;background:#000;display:none;max-width:900px}
+    .video-card{width:100%;max-width:920px}
+
+    .meta-row{display:flex;justify-content:space-between;align-items:center;width:100%}
+    .meta-row .lesson{font-weight:800}
+    .meta-row .status{color:var(--muted);font-size:13px}
+
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+
+    /* snackbar */
+    .snackbar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -100px;
+      background: #111827;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.3);
+      transition: bottom 0.35s ease, opacity 0.35s ease;
+      opacity: 0;
+      z-index: 9999;
+      max-width: 92%;
+    }
+    .snackbar.show { bottom: 28px; opacity: 1; }
+    .snackbar.success { background: var(--success); color: white; }
+    .snackbar.error { background: var(--danger); color: white; }
+
+    /* spinner */
+    .spinner{
+      width:20px;height:20px;border-radius:50%;border:3px solid rgba(0,0,0,0.08);border-top-color:var(--accent);animation:spin 0.9s linear infinite;display:inline-block;margin-left:10px;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .manual-area{display:none;width:100%;gap:8px;align-items:center;margin-top:8px}
+    .manual-area input{flex:1}
+
+    @media (max-width:820px){
+      iframe.video{height:320px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">M</div>
+        <div class="title">
+          <h1>بوابة المحاضرات</h1>
+        </div>
+      </div>
+
+      <div class="master">
+        <div class="label"></div>
+        <!-- غيّر القيمة في الكود أو هنا (يحفظ محليًا) -->
+        <div id="masterName" class="name" contenteditable="true" title="اضغط لتعديل اسم المدرس"> دكتور ايمن عبدالرحيم </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <strong>مشاهدة المحاضرات</strong>
+            <div class="muted">اختر صفك، ثم أدخل الكود واضغط عرض</div>
+          </div>
+          
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="row">
+          <div class="col">
+            <label>اختر الصف</label>
+            <select id="gradeSelect">
+              <option value="CodeGrade1">اولي ثانوي</option>
+              <option value="CodeGrade2">تانيه ثانوي</option>
+              <option value="CodeGrade3">تالته ثانوي</option>
+            </select>
+          </div>
+
+          <div class="col">
+            <label>أدخل الكود</label>
+            <input id="studentCode" type="text" placeholder="مثال: AB12CD34" />
+          </div>
+
+          <div style="display:flex;align-items:flex-end;gap:8px">
+            <button id="showBtn" class="btn">عرض المحاضرة</button>
+            <a href="../Quiz/index.html" class="btn ghost">الامتحانات</a>
+
+          </div>
+        </div>
+
+        <div id="loadingRow" style="margin-top:12px;display:none;align-items:center">
+          <div class="spinner"></div>
+          <div style="margin-right:10px;color:var(--muted)">جاري البحث عن الكود وفتح المحاضرة...</div>
+        </div>
+
+        <div class="video-card" style="margin-top:14px">
+          <div class="card video-wrap" style="padding:12px">
+            <div class="meta-row">
+              <div class="lesson" id="videoTitle">لا توجد محاضرة حالياً</div>
+              <div class="status" id="videoStatus">ادخل الكود واضغط عرض</div>
+            </div>
+
+            <iframe id="videoFrame" class="video" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+            <div id="manualArea" class="manual-area">
+              <input id="manualLink" type="url" placeholder="إذا لم يوجد رابط في الشيت: ضع رابط الفيديو (youtube أو embed)" />
+              <button id="useManual" class="btn">استخدم اللينك</button>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+     
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Snackbar -->
+  <div id="snackbar" class="snackbar">نص تجريبي</div>
+     
+<footer class="bg-gray-950 text-white text-center py-10 mt-10">
+  <div class="bg-gray-900 max-w-md mx-auto rounded-2xl shadow-lg p-6 border border-gray-800">
+    <p class="text-base font-semibold tracking-wide mb-3">
+      صُمّم بواسطة 
+      <span class="text-blue-400 font-bold">Abdelrahman Tarek</span>
+    </p>
+    <a href="https://t.me/yourusername" target="_blank" 
+       class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 
+              text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-md transition-all duration-300">
+      <i class="fa-solid fa-envelope"></i>
+      تواصل معنا
+    </a>
+  </div>
+</footer>
+
+
+
+
+<script>
+/*
+  ✳️ عدّل القيم هنا حسب شيتك:
+    - MASTER_NAME: الاسم الظاهر أعلى الصفحة
+    - SPREADSHEET_ID: معرف ملف Google Sheet (بين /d/ و /edit)
+    - EXAMS_URL: رابط صفحة الامتحانات
+    - SHEET_NAMES: أسماء الشيتات داخل الملف (كما هي مكتوبة في Google Sheets)
+  
+  ملاحظة: السكربت يستخدم رابط gviz لتصدير كل شيت كـ JSON:
+  https://docs.google.com/spreadsheets/d/<ID>/gviz/tq?tqx=out:json&sheet=<SHEET_NAME>
+*/
+
+const MASTER_NAME = " دكتور ايمن عبدالرحيم "; // غيره هنا أو عدّله من الـ contenteditable في الأعلى
+const SPREADSHEET_ID = "1lv6jHrJeZhla73c2BFHcNE9sCoHwAvCt6faSnD5yp9Y"; // <-- ضع هنا معرف الشيت
+const EXAMS_URL = "https://your-exams-site.example";     // <-- ضع رابط الامتحانات هنا
+
+const SHEET_NAMES = {
+  grade1: "CodeGrade1",
+  grade2: "CodeGrade2",
+  grade3: "CodeGrade3",
+  videos: "Videos"
+};
+
+/* =========================
+   واجهة المستخدم الأساسية
+   ========================= */
+const $ = id => document.getElementById(id);
+const snackbar = $('snackbar');
+
+function showSnackbar(text, type = 'info', duration = 3000) {
+  snackbar.textContent = text;
+  snackbar.className = 'snackbar show';
+  if (type === 'success') snackbar.classList.add('success');
+  else if (type === 'error') snackbar.classList.add('error');
+
+  setTimeout(() => {
+    snackbar.className = 'snackbar';
+  }, duration);
+}
+
+/* حفظ اسم المدرس محليًا */
+const masterEl = $('masterName');
+masterEl.addEventListener('input', () => localStorage.setItem('masterName', masterEl.textContent.trim()));
+const savedMaster = localStorage.getItem('masterName');
+if (savedMaster) masterEl.textContent = savedMaster;
+else masterEl.textContent = MASTER_NAME;
+
+/* زر الامتحانات */
+$('examsBtn').addEventListener('click', () => {
+  const url = (EXAMS_URL && EXAMS_URL !== "https://your-exams-site.example") ? EXAMS_URL : prompt("ضع رابط صفحة الامتحانات:");
+  if (url) window.open(url, '_blank');
+});
+
+/* زر عرض المحاضرة */
+$('showBtn').addEventListener('click', async () => {
+  const codeRaw = $('studentCode').value.trim();
+  if (!codeRaw) { showSnackbar('من فضلك أدخل الكود أولاً', 'error'); return; }
+  const code = codeRaw.toUpperCase();
+
+  // grade sheet name
+  const grade = $('gradeSelect').value;
+  if (!SPREADSHEET_ID || SPREADSHEET_ID === "PUT_YOUR_SPREADSHEET_ID_HERE") {
+    showSnackbar('ضع معرف Google Sheet في الكود أولاً (SPREADSHEET_ID).', 'error', 5000);
+    return;
+  }
+
+  try {
+    // show loading
+    $('loadingRow').style.display = 'flex';
+    $('videoStatus').textContent = 'جاري البحث...';
+    $('videoFrame').style.display = 'none';
+    $('videoFrame').src = '';
+
+    // 1) جلب شيت الصف المختار
+    const gradeRows = await fetchSheetAsArray(SPREADSHEET_ID, grade);
+    if (!gradeRows || gradeRows.length < 1) {
+      throw new Error('ملف الصف فارغ أو غير متاح.');
+    }
+    // header = أسماء الدروس في الصف (أعمدة)
+    const header = gradeRows[0].map(h => (h || '').toString().trim());
+    // بناء بحث الكود: scan كل عمود (من الصف 2 إلى آخر) ومواءمة
+    let found = null; // { lessonName, colIndex }
+    for (let col = 0; col < header.length; col++) {
+      const lessonName = header[col] || `درس ${col+1}`;
+      for (let r = 1; r < gradeRows.length; r++) {
+        const cell = (gradeRows[r][col] || '').toString().trim();
+        if (!cell) continue;
+        if (cell.toUpperCase() === code) {
+          found = { lessonName, colIndex: col };
+          break;
+        }
+      }
+      if (found) break;
+    }
+
+    if (!found) {
+      $('loadingRow').style.display = 'none';
+      $('videoStatus').textContent = 'لم يتم العثور على الكود';
+      showSnackbar('الكود غير موجود في شيت الصف المختار.', 'error', 4000);
+      return;
+    }
+
+    // 2) جلب شيت Videos
+    // 2) جلب شيت Videos
+const videosRows = await fetchSheetAsArray(SPREADSHEET_ID, SHEET_NAMES.videos);
+const videosMap = {}; // key: Grade + Name -> Link
+
+if (videosRows && videosRows.length > 0) {
+  let startRow = 0;
+  const firstRow = videosRows[0].map(c => (c||'').toString().toLowerCase());
+  const headerCandidates = ['lesson','درس','name','video','link','لينك','url'];
+  if (firstRow.some(c => headerCandidates.some(h => c.includes(h)))) startRow = 1;
+
+  // الأعمدة بالترتيب: [0]=Grade, [1]=Name, [2]=Link
+  for (let r = startRow; r < videosRows.length; r++) {
+    const row = videosRows[r];
+    const grade = (row[0] || '').toString().trim();
+    const name  = (row[1] || '').toString().trim();
+    const link  = (row[2] || '').toString().trim();
+
+    if (grade && name && link) {
+      // المفتاح = الصف + اسم الدرس
+      const key = `${grade}_${name}`;
+      videosMap[key] = link;
+    }
+  }
+}
+
+      // أيضاً حاول البحث إذا كان الصف الأول يتضمن أزواج اسم/لينك بشكل مختلف
+      // (لو لم يعطِ شيء، سنعطي المستخدم خيار إدخال لينك يدوي)
+  
+
+    // 3) جلب اللينك من الخريطة
+   const lesson = found.lessonName;
+   const gradeName = $('gradeSelect').options[$('gradeSelect').selectedIndex].text.trim();
+   const key = `${gradeName}_${lesson}`;
+   let link = videosMap[key];
+
+    if (!link) {
+      // ابراز منطقة الإدخال اليدوي
+      $('loadingRow').style.display = 'none';
+      $('videoStatus').textContent = `تم العثور على الكود لدرس: ${lesson} (لا يوجد لينك مُسجّل)`;
+      $('manualArea').style.display = 'flex';
+      $('manualLink').value = '';
+      showSnackbar('وجدت الكود لكن لم أجد رابط المحاضرة. ضع الرابط يدوياً أو اطلب من المدرس تحديث شيت Videos.', 'info', 6000);
+
+      $('useManual').onclick = () => {
+        const manual = $('manualLink').value.trim();
+        if (!manual) { showSnackbar('ضع رابط الفيديو أولاً', 'error'); return; }
+        link = manual;
+        loadAndShowVideo(link, lesson);
+        $('manualArea').style.display = 'none';
+      };
+      return;
+    }
+
+    // 4) عرض الفيديو
+    loadAndShowVideo(link, lesson);
+
+  } catch (err) {
+    console.error(err);
+    showSnackbar('حدث خطأ أثناء العملية: ' + (err.message || err), 'error', 6000);
+    $('videoStatus').textContent = 'حدث خطأ';
+    $('loadingRow').style.display = 'none';
+  }
+});
+
+function loadAndShowVideo(rawLink, lesson) {
+  function convertYouTubeLink(link) {
+    if (!link) return "";
+    link = link.trim();
+    // إزالة باراميترات محتشمة قد تكسر الـ embed
+    // نأخذ جزء قبل أول ? أو &
+    link = link.split('?')[0].split('&')[0];
+
+    // youtu.be/id
+    if (link.includes("youtu.be/")) {
+      const id = link.split("youtu.be/")[1].split('/')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    // watch?v=id
+    if (link.includes("watch?v=")) {
+      const id = link.split("watch?v=")[1].split('&')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    // لو رابط فيه embed أصلًا
+    if (link.includes("/embed/")) {
+      return link.split('?')[0];
+    }
+    // لو الرابط يبدو أنه فقط id
+    if (/^[A-Za-z0-9_-]{6,}$/.test(link)) {
+      return `https://www.youtube.com/embed/${link}`;
+    }
+    // fallback: نُعيد كما هو
+    return link;
+  }
+
+  // تنظيف وتحويل
+  const raw = (rawLink || '').toString();
+  const final = convertYouTubeLink(raw);
+
+  // طباعة مفصّلة في الـ Console
+  console.log("DEBUG: rawLink from sheet ->", raw);
+  console.log("DEBUG: converted embed link ->", final);
+
+  // اظهار رابط قابل للفتح تحت الفيديو (لو فيه عنصر debugArea نصيه سننشئه)
+  let dbg = document.getElementById('debugLinkArea');
+  if (!dbg) {
+    dbg = document.createElement('div');
+    dbg.id = 'debugLinkArea';
+    dbg.style.marginTop = '8px';
+    dbg.style.fontSize = '13px';
+    dbg.style.color = '#444';
+    dbg.style.wordBreak = 'break-all';
+    const parent = document.querySelector('.video-wrap') || document.body;
+    parent.appendChild(dbg);
+  }
+  dbg.innerHTML = `<b>Raw:</b> ${escapeHtml(raw)}<br><b>Embed:</b> <a id="dbgOpen" href="${final}" target="_blank" rel="noopener">${final}</a>`;
+
+  // عرض في الإطار مع handlers
+  const frame = $('videoFrame');
+  frame.style.display = 'none';
+  frame.src = ''; // reset
+  $('videoTitle').textContent = lesson;
+  $('videoStatus').textContent = 'جاري تحميل المحاضرة...';
+  $('loadingRow').style.display = 'flex';
+  $('manualArea').style.display = 'none';
+
+  // timeout للكشف عن مشاكل (7s)
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    $('loadingRow').style.display = 'none';
+    $('videoStatus').textContent = 'فشل تحميل (timeout)';
+    showSnackbar('فشل تحميل الفيديو خلال 7 ثوانٍ. افتح الرابط اليدوي للتحقق.', 'error', 6000);
+    // نبرز زر فتح الرابط اليدوي تلقائيًا
+    document.getElementById('dbgOpen').click(); // سيفتح تبويب جديد تلقائياً — يمكن تعليق هذا السطر لو لا تريد الفتح الآلي
+  }, 7000);
+
+  // onload/onerror
+  frame.onload = function() {
+    if (timedOut) return;
+    clearTimeout(timeoutId);
+    $('loadingRow').style.display = 'none';
+    frame.style.display = 'block';
+    $('videoStatus').textContent = 'يتم عرض المحاضرة الآن';
+    showSnackbar('تم عرض المحاضرة بنجاح', 'success', 2000);
+  };
+  frame.onerror = function() {
+    clearTimeout(timeoutId);
+    $('loadingRow').style.display = 'none';
+    $('videoStatus').textContent = 'فشل تحميل المحاضرة (iframe error)';
+    showSnackbar('فشل تحميل المحاضرة داخل الإطار. افتح الرابط اليدوي للتحقق.', 'error', 6000);
+  };
+
+  // ضع src
+  try {
+    frame.src = final;
+    console.log("DEBUG: iframe.src set ->", frame.src);
+  } catch (e) {
+    clearTimeout(timeoutId);
+    $('loadingRow').style.display = 'none';
+    $('videoStatus').textContent = 'خطأ عند تعيين src';
+    console.error("DEBUG: setting iframe.src threw:", e);
+    showSnackbar('تعذر تعيين رابط الفيديو للإطار (خطأ داخلي).', 'error', 6000);
+  }
+
+  // HTML escape للمخرجات
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (m) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
+  }
+}
+
+
+
+/* =========================
+   دوال تحميل شيت من Google (gviz -> JSON)
+   ========================= */
+async function fetchSheetAsArray(spreadsheetId, sheetName) {
+  // بنستخدم gviz لتصدير الشيت كـ JSON
+  const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('فشل تحميل الشيت: ' + sheetName);
+  const txt = await res.text();
+  const json = parseGvizJson(txt);
+  if (!json || !json.table) return null;
+  // تحويل إلى مصفوفة صفوف x أعمدة (قيم نصية)
+  const rows = [];
+  const colsCount = json.table.cols.length;
+  for (let r = 0; r < json.table.rows.length; r++) {
+    const row = json.table.rows[r].c || [];
+    const arr = new Array(colsCount).fill('');
+    for (let c = 0; c < colsCount; c++) {
+      if (row[c] && row[c].v !== null && row[c].v !== undefined) arr[c] = row[c].v;
+    }
+    rows.push(arr);
+  }
+  return rows;
+}
+
+function parseGvizJson(text) {
+  // gviz يرد بصيغة: /*O_o*/\ngoogle.visualization.Query.setResponse({...});
+  try {
+    const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?/);
+    if (!m) return null;
+    return JSON.parse(m[1]);
+  } catch (e) {
+    console.error('parseGvizJson failed', e);
+    return null;
+  }
+}
+
+/* مساعدة: الضغط Enter داخل حقل الكود */
+$('studentCode').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') $('showBtn').click();
+});
+</script>
+</body>
+</html>
